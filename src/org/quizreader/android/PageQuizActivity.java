@@ -29,6 +29,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -39,12 +40,13 @@ public class PageQuizActivity extends BaseQuizReadActivity {
 	private RadioGroup radioGroup;
 	private RadioButton[] radioButtons;
 	private Button okButton;
+	private ProgressBar progressBar;
 
+	private QuizWordDao quizWordDao;
 	private List<QuizWord> quizWords;
 	private Random random;
-	private int correctAnswerId;
 	private QuizWord testWord;
-	private QuizWordDao quizWordDao;
+	private int correctAnswerId;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -54,6 +56,7 @@ public class PageQuizActivity extends BaseQuizReadActivity {
 		wordText = (TextView) findViewById(R.id.wordText);
 		radioGroup = (RadioGroup) findViewById(R.id.radioGroup);
 		okButton = (Button) findViewById(R.id.answerButton);
+		progressBar = (ProgressBar) findViewById(R.id.progressBar);
 		radioButtons = new RadioButton[3];
 		radioButtons[0] = (RadioButton) findViewById(R.id.radioButton1);
 		radioButtons[1] = (RadioButton) findViewById(R.id.radioButton2);
@@ -71,6 +74,7 @@ public class PageQuizActivity extends BaseQuizReadActivity {
 			finish();
 		}
 		else {
+			progressBar.setMax(quizWords.size());
 			random = new Random();
 			showNextQuiz();
 		}
@@ -137,6 +141,7 @@ public class PageQuizActivity extends BaseQuizReadActivity {
 		int selectedId = radioGroup.getCheckedRadioButtonId();
 		if (selectedId == correctAnswerId) {
 			quizWords.remove(testWord);
+			progressBar.incrementProgressBy(1);
 		}
 		else {
 			RadioButton selectedButton = (RadioButton) findViewById(selectedId);
