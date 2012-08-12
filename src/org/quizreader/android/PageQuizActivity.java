@@ -17,6 +17,7 @@
 
 package org.quizreader.android;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -85,14 +86,28 @@ public class PageQuizActivity extends BaseQuizReadActivity {
 
 		int correctIndex = random.nextInt(3);
 		correctAnswerId = radioButtons[correctIndex].getId();
-		System.out.println("correctAnswerId = " + correctAnswerId);
-
 		fillButton(testWord, correctIndex);
+
 		quizWordDao.open();
 		QuizWord unrelatedWord = quizWordDao.getRandomQuizWord(title.getId(), testWord.getId());
+		QuizWord similarWord = findSimilarWord();
 		quizWordDao.close();
-		fillButton(unrelatedWord, nextEmptyIndex());
-		fillButton(testWord, nextEmptyIndex());
+
+		int order = random.nextInt(1);
+		fillButton(order == 0 ? similarWord : unrelatedWord, nextEmptyIndex());
+		fillButton(order == 0 ? unrelatedWord : similarWord, nextEmptyIndex());
+	}
+
+	private QuizWord findSimilarWord() {
+		List<QuizWord> quizWordsLike = Collections.emptyList();
+		while (quizWordsLike.size() == 0) {
+			String token = testWord.getWord().getToken();
+			int randIndex = random.nextInt(token.length() - 1);
+			String like = token.charAt(0) + "%" + token.charAt(randIndex) + "%";
+			quizWordsLike = quizWordDao.getQuizWordsLike(title.getId(), testWord.getId(), like);
+		}
+		int randomIndex = random.nextInt(quizWordsLike.size());
+		return quizWordsLike.get(randomIndex);
 	}
 
 	private void fillButton(QuizWord quizWord, int i) {

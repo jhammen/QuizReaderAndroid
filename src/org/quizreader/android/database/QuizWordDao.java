@@ -66,28 +66,14 @@ public class QuizWordDao extends BaseDao {
 		String[] queryArgs = new String[] { titleId, Integer.toString(section), Integer.toString(paragraph) };
 		Cursor cursor = db.rawQuery(query, queryArgs);
 		// db.query(TABLE_QUIZ_WORDS, null, query, queryArgs, null, null, null);
-		cursor.moveToFirst();
-		List<QuizWord> quizWords = new ArrayList<QuizWord>();
-		while (cursor.isAfterLast() == false) {
-			quizWords.add(cursorToQuizWord(cursor));
-			cursor.moveToNext();
-		}
-		cursor.close();
-
-		// query for definitions
-
-		defDao.open();
-		for (QuizWord quizWord : quizWords) {
-			quizWord.setDefinitions(defDao.getDefinitions(quizWord.getId()));
-		}
-		defDao.close();
-		return quizWords;
+		return cursorToQuizWords(cursor);
 	}
 
 	public QuizWord getRandomQuizWord(String titleId, String quizWordId) {
 		String query = "SELECT * FROM " + TABLE_QUIZ_WORDS + ", " + WordDao.TABLE_WORD;
 		query += " WHERE " + FIELD_WORD_ID + "=" + WordDao.TABLE_WORD + "." + WordDao.FIELD_ID;
-		query += " AND " + FIELD_TITLE_ID + "=? AND " + FIELD_ID + "!=? ORDER BY RANDOM() LIMIT 1";
+		query += " AND " + FIELD_TITLE_ID + "=? AND " + TABLE_QUIZ_WORDS + "." + FIELD_ID + "!=?";
+		query += " ORDER BY RANDOM() LIMIT 1";
 		Cursor cursor = db.rawQuery(query, new String[] { titleId, quizWordId });
 		cursor.moveToFirst();
 		QuizWord quizWord = cursorToQuizWord(cursor);
@@ -98,6 +84,15 @@ public class QuizWordDao extends BaseDao {
 		return quizWord;
 	}
 
+	public List<QuizWord> getQuizWordsLike(String titleId, String quizWordId, String like) {
+		String query = "SELECT * FROM " + TABLE_QUIZ_WORDS + ", " + WordDao.TABLE_WORD;
+		query += " WHERE " + FIELD_WORD_ID + "=" + WordDao.TABLE_WORD + "." + WordDao.FIELD_ID;
+		query += " AND " + FIELD_TITLE_ID + "=? AND " + TABLE_QUIZ_WORDS + "." + FIELD_ID + "!=?";
+		query += " AND " + WordDao.FIELD_TOKEN + " LIKE '" + like + "'";
+		Cursor cursor = db.rawQuery(query, new String[] { titleId, quizWordId });
+		return cursorToQuizWords(cursor);
+	}
+
 	public void deleteQuizWord(String wordId, String titleId) {
 		String query = FIELD_WORD_ID + "=? AND " + FIELD_TITLE_ID + "=?";
 		db.delete(TABLE_QUIZ_WORDS, query, new String[] { wordId, titleId });
@@ -106,6 +101,24 @@ public class QuizWordDao extends BaseDao {
 	public void deleteQuizWords(String titleId, int section) {
 		String query = FIELD_TITLE_ID + "=? AND " + FIELD_SECTION + "=?";
 		db.delete(TABLE_QUIZ_WORDS, query, new String[] { titleId, Integer.toString(section) });
+	}
+
+	private List<QuizWord> cursorToQuizWords(Cursor cursor) {
+		cursor.moveToFirst();
+		List<QuizWord> quizWords = new ArrayList<QuizWord>();
+		while (cursor.isAfterLast() == false) {
+			quizWords.add(cursorToQuizWord(cursor));
+			cursor.moveToNext();
+		}
+		cursor.close();
+
+		defDao.open();
+		for (QuizWord quizWord : quizWords) {
+			quizWord.setDefinitions(defDao.getDefinitions(quizWord.getId()));
+		}
+		defDao.close();
+
+		return quizWords;
 	}
 
 	private QuizWord cursorToQuizWord(Cursor cursor) {
