@@ -89,7 +89,7 @@ public class PageQuizActivity extends BaseQuizReadActivity {
 
 		fillButton(testWord, correctIndex);
 		quizWordDao.open();
-		QuizWord unrelatedWord = quizWordDao.getRandomQuizWord(title.getId());
+		QuizWord unrelatedWord = quizWordDao.getRandomQuizWord(title.getId(), testWord.getId());
 		quizWordDao.close();
 		fillButton(unrelatedWord, nextEmptyIndex());
 		fillButton(testWord, nextEmptyIndex());
@@ -117,7 +117,6 @@ public class PageQuizActivity extends BaseQuizReadActivity {
 	public void answer(View view) {
 		// paint correct answer green
 		RadioButton correctButton = (RadioButton) findViewById(correctAnswerId);
-		System.out.println("on changed: correctId = " + correctAnswerId + " button is : " + correctButton);
 		correctButton.setBackgroundColor(Color.GREEN);
 		correctButton.getBackground().setAlpha(90);
 		int selectedId = radioGroup.getCheckedRadioButtonId();

@@ -84,11 +84,11 @@ public class QuizWordDao extends BaseDao {
 		return quizWords;
 	}
 
-	public QuizWord getRandomQuizWord(String titleId) {
+	public QuizWord getRandomQuizWord(String titleId, String quizWordId) {
 		String query = "SELECT * FROM " + TABLE_QUIZ_WORDS + ", " + WordDao.TABLE_WORD;
-		query += " WHERE " + FIELD_WORD_ID + "= " + WordDao.TABLE_WORD + "." + WordDao.FIELD_ID;
-		query += " AND " + FIELD_TITLE_ID + "=? ORDER BY RANDOM() LIMIT 1";
-		Cursor cursor = db.rawQuery(query, new String[] { titleId });
+		query += " WHERE " + FIELD_WORD_ID + "=" + WordDao.TABLE_WORD + "." + WordDao.FIELD_ID;
+		query += " AND " + FIELD_TITLE_ID + "=? AND " + FIELD_ID + "!=? ORDER BY RANDOM() LIMIT 1";
+		Cursor cursor = db.rawQuery(query, new String[] { titleId, quizWordId });
 		cursor.moveToFirst();
 		QuizWord quizWord = cursorToQuizWord(cursor);
 		cursor.close();
