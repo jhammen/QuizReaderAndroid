@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">QuizReader</string>
+    <string name="title">Currently Reading: </string>
+    <string name="author">By: </string>
+    <string name="load_file">Load Title</string>
+    <string name="start">QuizRead</string>
+    <string name="kontinue">Continue</string>
+    <string name="loaded_titles">Loaded Titles</string>
+    <string name="scan_device">Scan Device</string>
+    <string name="add_title">Add Title...</string>
+    <string name="enter_url">enter url</string>
+    <string name="flag_image">Flag Image</string>
+
+</resources>
