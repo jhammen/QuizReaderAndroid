@@ -24,25 +24,26 @@ import org.quizreader.android.database.Definition;
 import org.quizreader.android.database.QuizWord;
 import org.quizreader.android.database.QuizWordDao;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.TextView;
 
-public class PageQuizActivity extends BaseQuizReadActivity implements OnCheckedChangeListener {
+public class PageQuizActivity extends BaseQuizReadActivity {
 
 	private TextView wordText;
 	private RadioGroup radioGroup;
 	private RadioButton[] radioButtons;
-	private Button answerButton;
+	private Button okButton;
 
 	private List<QuizWord> quizWords;
 	private Random random;
 	private int correctAnswerId;
 	private QuizWord testWord;
+	private QuizWordDao quizWordDao;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -51,15 +52,16 @@ public class PageQuizActivity extends BaseQuizReadActivity implements OnCheckedC
 		setContentView(R.layout.page_quiz);
 		wordText = (TextView) findViewById(R.id.wordText);
 		radioGroup = (RadioGroup) findViewById(R.id.radioGroup);
-		radioGroup.setOnCheckedChangeListener(this);
-		answerButton = (Button) findViewById(R.id.answerButton);
+		okButton = (Button) findViewById(R.id.answerButton);
 		radioButtons = new RadioButton[3];
 		radioButtons[0] = (RadioButton) findViewById(R.id.radioButton1);
 		radioButtons[1] = (RadioButton) findViewById(R.id.radioButton2);
 		radioButtons[2] = (RadioButton) findViewById(R.id.radioButton3);
+		for (RadioButton radioButton : radioButtons) {
+			radioButton.setEnabled(false);
+		}
 
-		// query for words
-		QuizWordDao quizWordDao = new QuizWordDao(this);
+		quizWordDao = new QuizWordDao(this);
 		quizWordDao.open();
 		quizWords = quizWordDao.getQuizWords(title.getId(), title.getSection(), title.getParagraph());
 		quizWordDao.close();
@@ -75,10 +77,7 @@ public class PageQuizActivity extends BaseQuizReadActivity implements OnCheckedC
 
 	private void showNextQuiz() {
 		radioGroup.clearCheck();
-		answerButton.setEnabled(false);
-		for (int i = 0; i < 3; i++) {
-			radioButtons[i].setEnabled(false);
-		}
+		okButton.setEnabled(false);
 
 		int index = random.nextInt(quizWords.size());
 		testWord = quizWords.get(index);
@@ -86,23 +85,28 @@ public class PageQuizActivity extends BaseQuizReadActivity implements OnCheckedC
 
 		int correctIndex = random.nextInt(3);
 		correctAnswerId = radioButtons[correctIndex].getId();
+		System.out.println("correctAnswerId = " + correctAnswerId);
 
-		fillNextButton(testWord, correctIndex);
-		fillNextButton(testWord, nextIndex());
-		fillNextButton(testWord, nextIndex());
+		fillButton(testWord, correctIndex);
+		quizWordDao.open();
+		QuizWord unrelatedWord = quizWordDao.getRandomQuizWord(title.getId());
+		quizWordDao.close();
+		fillButton(unrelatedWord, nextEmptyIndex());
+		fillButton(testWord, nextEmptyIndex());
 	}
 
-	private void fillNextButton(QuizWord quizWord, int i) {
+	private void fillButton(QuizWord quizWord, int i) {
 		StringBuffer buff = new StringBuffer();
 		for (Definition def : quizWord.getDefinitions()) {
 			buff.append(def.getText() + "; ");
 		}
 		String defString = buff.toString().substring(0, buff.length() - 2);
 		radioButtons[i].setText(defString);
+		radioButtons[i].setBackgroundColor(Color.BLACK);
 		radioButtons[i].setEnabled(true);
 	}
 
-	private int nextIndex() {
+	private int nextEmptyIndex() {
 		int i = 0;
 		while (radioButtons[i].isEnabled()) {
 			i++;
@@ -110,18 +114,28 @@ public class PageQuizActivity extends BaseQuizReadActivity implements OnCheckedC
 		return i;
 	}
 
-	@Override
-	public void onCheckedChanged(RadioGroup arg0, int arg1) {
-		answerButton.setEnabled(true);
-	}
-
 	public void answer(View view) {
+		// paint correct answer green
+		RadioButton correctButton = (RadioButton) findViewById(correctAnswerId);
+		System.out.println("on changed: correctId = " + correctAnswerId + " button is : " + correctButton);
+		correctButton.setBackgroundColor(Color.GREEN);
+		correctButton.getBackground().setAlpha(90);
 		int selectedId = radioGroup.getCheckedRadioButtonId();
-		// find the radiobutton by returned id
 		if (selectedId == correctAnswerId) {
 			quizWords.remove(testWord);
 		}
+		else {
+			RadioButton selectedButton = (RadioButton) findViewById(selectedId);
+			selectedButton.setBackgroundColor(Color.RED);
+			selectedButton.getBackground().setAlpha(90);
+		}
+		for (RadioButton radioButton : radioButtons) {
+			radioButton.setEnabled(false);
+		}
+		okButton.setEnabled(true);
+	}
 
+	public void kontinue(View view) {
 		if (quizWords.size() > 0) {
 			showNextQuiz();
 		}
