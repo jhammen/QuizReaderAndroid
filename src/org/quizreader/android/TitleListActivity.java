@@ -30,6 +30,7 @@ import android.widget.ListView;
 
 public class TitleListActivity extends ListActivity {
 
+	private static final int REQUEST_ADD_TITLE = 0;
 	private List<Title> titles;
 
 	@Override
@@ -37,6 +38,10 @@ public class TitleListActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.title_list);
 
+		loadTitles();
+	}
+
+	private void loadTitles() {
 		TitleDao titleDao = new TitleDao(this);
 		titleDao.open();
 		titles = titleDao.getAllTitles();
@@ -46,8 +51,8 @@ public class TitleListActivity extends ListActivity {
 	}
 
 	public void addTitle(View view) {
-		Intent myIntent = new Intent(this, TitleAddActivity.class);
-		startActivity(myIntent);
+		Intent addTitleIntent = new Intent(this, TitleAddActivity.class);
+		startActivityForResult(addTitleIntent, REQUEST_ADD_TITLE);
 	}
 
 	@Override
@@ -55,6 +60,14 @@ public class TitleListActivity extends ListActivity {
 		Intent titleReadIntent = new Intent(this, TitleReadActivity.class);
 		titleReadIntent.putExtra("titleId", titles.get(position).getId());
 		startActivity(titleReadIntent);
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (requestCode == REQUEST_ADD_TITLE) {
+			loadTitles();
+		}
 	}
 
 	// class TitleAdapter extends ArrayAdapter<Title> {

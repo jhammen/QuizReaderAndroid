@@ -26,7 +26,7 @@ create table quizword (
  	section 	integer,
  	paragraph	integer,
  	foreign key(word_id)	references word(_id),	
- 	foreign key(title_id)	references title(_id)	
+ 	foreign key(title_id)	references title(_id) ON DELETE CASCADE
 );
 
 create table definition (

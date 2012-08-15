@@ -51,8 +51,7 @@ public class TitleDao extends BaseDao {
 		if (title.getId() == null) {
 			long id = db.insert(TABLE_TITLES, null, cv);
 			title.setId(Long.toString(id));
-		}
-		else {
+		} else {
 			db.update(TABLE_TITLES, cv, FIELD_ID + " =  ?", new String[] { title.getId() });
 		}
 	}
@@ -88,6 +87,10 @@ public class TitleDao extends BaseDao {
 		title.setTotalParagraphs(cursor.getInt(cursor.getColumnIndex(FIELD_TOTAL_PARAGRAPHS)));
 		title.setFilepath(cursor.getString(cursor.getColumnIndex(FIELD_FILEPATH)));
 		return title;
+	}
+
+	public void deleteTitle(String titleId) {
+		db.delete(TABLE_TITLES, FIELD_ID + "=?", new String[] { titleId });
 	}
 
 }

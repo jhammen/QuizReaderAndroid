@@ -35,6 +35,13 @@ public class QRDatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	@Override
+	public void onOpen(SQLiteDatabase db) {
+		if (!db.isReadOnly()) {
+			db.execSQL("PRAGMA foreign_keys=ON;");
+		}
+	}
+
+	@Override
 	public void onCreate(SQLiteDatabase db) {
 		for (String sql : loadScripts(context, "create.sql")) {
 			System.out.println("loading sql: " + sql);

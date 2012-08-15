@@ -68,6 +68,13 @@ public class TitleAddActivity extends ListActivity {
 		LoadDefinitionsTask loadTitleDefsTask = new LoadDefinitionsTask(this, title) {
 
 			@Override
+			protected void onCancelled() {
+				titleDao.open();
+				titleDao.deleteTitle(title.getId());
+				titleDao.close();
+			}
+
+			@Override
 			protected void onPostExecute(Integer result) {
 				super.onPostExecute(result);
 				finish();

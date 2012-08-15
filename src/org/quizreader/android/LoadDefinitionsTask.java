@@ -39,7 +39,13 @@ public class LoadDefinitionsTask extends AsyncTask<DefinitionReader, Integer, In
 		this.title = title;
 		wordDao = new WordDao(context);
 		quizWordDao = new QuizWordDao(context);
-		dialog = new ProgressDialog(context);
+		dialog = new ProgressDialog(context) {
+			@Override
+			public void onBackPressed() {
+				LoadDefinitionsTask.this.cancel(true);
+				super.onBackPressed();
+			}
+		};
 		dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 	}
 
@@ -57,7 +63,7 @@ public class LoadDefinitionsTask extends AsyncTask<DefinitionReader, Integer, In
 			// delete existing quizwords
 			quizWordDao.deleteQuizWords(title.getId(), definitionReader.getSectionNumber());
 			Entry entry = definitionReader.nextEntry();
-			while (entry != null) {
+			while (entry != null && !isCancelled()) {
 				// create if word does not exist for this language
 				Word word = wordDao.getWord(entry.getWord(), title.getLanguage());
 				if (word == null) {
