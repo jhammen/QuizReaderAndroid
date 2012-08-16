@@ -32,6 +32,14 @@ public class BaseDao {
 		db = databaseHelper.getWritableDatabase();
 	}
 
+	public void open(SQLiteDatabase database) {
+		db = database;
+	}
+
+	public SQLiteDatabase getDatabase() {
+		return db;
+	}
+
 	public void close() {
 		databaseHelper.close();
 	}

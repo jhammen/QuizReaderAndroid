@@ -59,7 +59,7 @@ public class LoadDefinitionsTask extends AsyncTask<DefinitionReader, Integer, In
 		DefinitionReader definitionReader = readers[0];
 		try {
 			wordDao.open();
-			quizWordDao.open();
+			quizWordDao.open(wordDao.getDatabase());
 			// delete existing quizwords
 			quizWordDao.deleteQuizWords(title.getId(), definitionReader.getSectionNumber());
 			Entry entry = definitionReader.nextEntry();

@@ -26,6 +26,7 @@ import java.util.List;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 
 public class QuizWordDao extends BaseDao {
 
@@ -42,6 +43,21 @@ public class QuizWordDao extends BaseDao {
 		defDao = new DefinitionDao(context);
 	}
 
+	public void open() {
+		super.open();
+		defDao.open(getDatabase());
+	}
+
+	public void open(SQLiteDatabase database) {
+		super.open(database);
+		defDao.open(database);
+	}
+
+	public void close() {
+		super.close();
+		defDao.close();
+	}
+
 	public void save(QuizWord quizWord) {
 		ContentValues cv = new ContentValues();
 		cv.put(FIELD_TITLE_ID, quizWord.getTitleId());
@@ -50,12 +66,10 @@ public class QuizWordDao extends BaseDao {
 		cv.put(FIELD_SECTION, quizWord.getSection());
 		long id = db.insert(TABLE_QUIZ_WORDS, null, cv);
 		quizWord.setId(Long.toString(id));
-		defDao.open();
 		for (Definition definition : quizWord.getDefinitions()) {
 			definition.setQuizWordId(quizWord.getId());
 			defDao.save(definition);
 		}
-		defDao.close();
 	}
 
 	public List<QuizWord> getQuizWords(String titleId, int section, int paragraph) {
@@ -78,9 +92,7 @@ public class QuizWordDao extends BaseDao {
 		cursor.moveToFirst();
 		QuizWord quizWord = cursorToQuizWord(cursor);
 		cursor.close();
-		defDao.open();
 		quizWord.setDefinitions(defDao.getDefinitions(quizWord.getId()));
-		defDao.close();
 		return quizWord;
 	}
 
@@ -112,11 +124,9 @@ public class QuizWordDao extends BaseDao {
 		}
 		cursor.close();
 
-		defDao.open();
 		for (QuizWord quizWord : quizWords) {
 			quizWord.setDefinitions(defDao.getDefinitions(quizWord.getId()));
 		}
-		defDao.close();
 
 		return quizWords;
 	}
