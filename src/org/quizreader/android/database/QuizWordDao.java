@@ -73,9 +73,7 @@ public class QuizWordDao extends BaseDao {
 	}
 
 	public List<QuizWord> getQuizWords(String titleId, int section, int paragraph) {
-
-		String query = "SELECT * FROM " + TABLE_QUIZ_WORDS + ", " + WordDao.TABLE_WORD;
-		query += " WHERE " + FIELD_WORD_ID + "= " + WordDao.TABLE_WORD + "." + WordDao.FIELD_ID;
+		String query = joinQueryString();
 		query += " AND " + FIELD_TITLE_ID + "=? AND " + FIELD_SECTION + "=? AND " + FIELD_PARAGRAPH + "=?";
 		String[] queryArgs = new String[] { titleId, Integer.toString(section), Integer.toString(paragraph) };
 		Cursor cursor = db.rawQuery(query, queryArgs);
@@ -84,8 +82,7 @@ public class QuizWordDao extends BaseDao {
 	}
 
 	public QuizWord getRandomQuizWord(String titleId, String quizWordId) {
-		String query = "SELECT * FROM " + TABLE_QUIZ_WORDS + ", " + WordDao.TABLE_WORD;
-		query += " WHERE " + FIELD_WORD_ID + "=" + WordDao.TABLE_WORD + "." + WordDao.FIELD_ID;
+		String query = joinQueryString();
 		query += " AND " + FIELD_TITLE_ID + "=? AND " + TABLE_QUIZ_WORDS + "." + FIELD_ID + "!=?";
 		query += " ORDER BY RANDOM() LIMIT 1";
 		Cursor cursor = db.rawQuery(query, new String[] { titleId, quizWordId });
@@ -97,12 +94,20 @@ public class QuizWordDao extends BaseDao {
 	}
 
 	public List<QuizWord> getQuizWordsLike(String titleId, String quizWordId, String like) {
-		String query = "SELECT * FROM " + TABLE_QUIZ_WORDS + ", " + WordDao.TABLE_WORD;
-		query += " WHERE " + FIELD_WORD_ID + "=" + WordDao.TABLE_WORD + "." + WordDao.FIELD_ID;
+		String query = joinQueryString();
 		query += " AND " + FIELD_TITLE_ID + "=? AND " + TABLE_QUIZ_WORDS + "." + FIELD_ID + "!=?";
 		query += " AND " + WordDao.FIELD_TOKEN + " LIKE '" + like + "'";
 		Cursor cursor = db.rawQuery(query, new String[] { titleId, quizWordId });
 		return cursorToQuizWords(cursor);
+	}
+
+	private String joinQueryString() {
+		String query = "SELECT " + TABLE_QUIZ_WORDS + "." + FIELD_ID + ",";
+		query += FIELD_WORD_ID + "," + WordDao.FIELD_LANGUAGE + "," + WordDao.FIELD_TOKEN + ",";
+		query += FIELD_TITLE_ID + "," + FIELD_SECTION + "," + FIELD_PARAGRAPH;
+		query += " FROM " + TABLE_QUIZ_WORDS + ", " + WordDao.TABLE_WORD;
+		query += " WHERE " + FIELD_WORD_ID + "= " + WordDao.TABLE_WORD + "." + WordDao.FIELD_ID;
+		return query;
 	}
 
 	public void deleteQuizWord(String wordId, String titleId) {
