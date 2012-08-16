@@ -17,8 +17,6 @@
         android:layout_height="38dp"
         android:ems="10"
         android:hint="@string/enter_url" >
-
-        <requestFocus />
-    </EditText>
+   </EditText>
 
 </LinearLayout>
