@@ -25,7 +25,6 @@ public class Title {
 	private int section = 1;
 	private int totalSections;
 	private int paragraph = 1;
-	private int totalParagraphs;
 
 	public String getId() {
 		return id;
@@ -81,14 +80,6 @@ public class Title {
 
 	public void setTotalSections(int totalSections) {
 		this.totalSections = totalSections;
-	}
-
-	public int getTotalParagraphs() {
-		return totalParagraphs;
-	}
-
-	public void setTotalParagraphs(int totalParagraphs) {
-		this.totalParagraphs = totalParagraphs;
 	}
 
 }

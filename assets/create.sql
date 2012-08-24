@@ -15,8 +15,7 @@ create table title (
 	filepath	varchar(512) unique,
 	section				integer,
 	total_sections		integer,
-	paragraph			integer,
-	total_paragraphs	integer
+	paragraph			integer
 );
 
 create table quizword (

@@ -59,7 +59,6 @@ public class TitleDao extends BaseDao {
 		cv.put(FIELD_SECTION, title.getSection());
 		cv.put(FIELD_TOTAL_SECTIONS, title.getTotalSections());
 		cv.put(FIELD_PARAGRAPH, title.getParagraph());
-		cv.put(FIELD_TOTAL_PARAGRAPHS, title.getTotalParagraphs());
 		database.update(TABLE_TITLES, cv, FIELD_ID + " =  ?", new String[] { title.getId() });
 	}
 
@@ -91,7 +90,6 @@ public class TitleDao extends BaseDao {
 		title.setSection(cursor.getInt(cursor.getColumnIndex(FIELD_SECTION)));
 		title.setTotalSections(cursor.getInt(cursor.getColumnIndex(FIELD_TOTAL_SECTIONS)));
 		title.setParagraph(cursor.getInt(cursor.getColumnIndex(FIELD_PARAGRAPH)));
-		title.setTotalParagraphs(cursor.getInt(cursor.getColumnIndex(FIELD_TOTAL_PARAGRAPHS)));
 		title.setFilepath(cursor.getString(cursor.getColumnIndex(FIELD_FILEPATH)));
 		return title;
 	}
