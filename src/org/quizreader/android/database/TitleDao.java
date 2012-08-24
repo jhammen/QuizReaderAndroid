@@ -22,6 +22,7 @@ import java.util.List;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 
 public class TitleDao extends BaseDao {
 
@@ -39,7 +40,18 @@ public class TitleDao extends BaseDao {
 		super(context);
 	}
 
-	public void saveTitle(Title title) {
+	public static long insertTitle(SQLiteDatabase db, Title title) {
+		ContentValues cv = new ContentValues();
+		cv.put(FIELD_NAME, title.getName());
+		cv.put(FIELD_LANGUAGE, title.getLanguage());
+		cv.put(FIELD_FILEPATH, title.getFilepath());
+		cv.put(FIELD_SECTION, title.getSection());
+		cv.put(FIELD_TOTAL_SECTIONS, title.getTotalSections());
+		cv.put(FIELD_PARAGRAPH, title.getParagraph());
+		return db.insert(TABLE_TITLES, null, cv);
+	}
+
+	public void updateTitle(Title title) {
 		ContentValues cv = new ContentValues();
 		cv.put(FIELD_NAME, title.getName());
 		cv.put(FIELD_LANGUAGE, title.getLanguage());
@@ -48,16 +60,11 @@ public class TitleDao extends BaseDao {
 		cv.put(FIELD_TOTAL_SECTIONS, title.getTotalSections());
 		cv.put(FIELD_PARAGRAPH, title.getParagraph());
 		cv.put(FIELD_TOTAL_PARAGRAPHS, title.getTotalParagraphs());
-		if (title.getId() == null) {
-			long id = db.insert(TABLE_TITLES, null, cv);
-			title.setId(Long.toString(id));
-		} else {
-			db.update(TABLE_TITLES, cv, FIELD_ID + " =  ?", new String[] { title.getId() });
-		}
+		database.update(TABLE_TITLES, cv, FIELD_ID + " =  ?", new String[] { title.getId() });
 	}
 
 	public List<Title> getAllTitles() {
-		Cursor cursor = db.query(TABLE_TITLES, null, null, null, null, null, null);
+		Cursor cursor = database.query(TABLE_TITLES, null, null, null, null, null, null);
 		cursor.moveToFirst();
 		List<Title> titles = new ArrayList<Title>();
 		while (cursor.isAfterLast() == false) {
@@ -69,7 +76,7 @@ public class TitleDao extends BaseDao {
 	}
 
 	public Title getTitleById(String titleId) {
-		Cursor cursor = db.query(TABLE_TITLES, null, FIELD_ID + " = ?", new String[] { titleId }, null, null, null);
+		Cursor cursor = database.query(TABLE_TITLES, null, FIELD_ID + " = ?", new String[] { titleId }, null, null, null);
 		cursor.moveToFirst();
 		Title ret = cursorToTitle(cursor);
 		cursor.close();
@@ -90,7 +97,7 @@ public class TitleDao extends BaseDao {
 	}
 
 	public void deleteTitle(String titleId) {
-		db.delete(TABLE_TITLES, FIELD_ID + "=?", new String[] { titleId });
+		database.delete(TABLE_TITLES, FIELD_ID + "=?", new String[] { titleId });
 	}
 
 }

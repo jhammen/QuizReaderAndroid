@@ -19,6 +19,7 @@ package org.quizreader.android.database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 
 public class WordDao extends BaseDao {
 
@@ -31,9 +32,27 @@ public class WordDao extends BaseDao {
 		super(context);
 	}
 
-	public Word getWord(String word, String language) {
+	public static long insertOrGetWordId(SQLiteDatabase db, String language, String word) {
+		long wordId;
 		String query = FIELD_TOKEN + " = ? AND " + FIELD_LANGUAGE + " = ?";
 		Cursor cursor = db.query(TABLE_WORD, null, query, new String[] { word, language }, null, null, null);
+		cursor.moveToFirst();
+		if (cursor.isAfterLast()) {
+			cursor.close();
+			ContentValues cv = new ContentValues();
+			cv.put(FIELD_LANGUAGE, language);
+			cv.put(FIELD_TOKEN, word);
+			wordId = db.insert(TABLE_WORD, null, cv);
+		} else {
+			wordId = cursor.getLong(cursor.getColumnIndex(FIELD_ID));
+			cursor.close();
+		}
+		return wordId;
+	}
+
+	public Word getWord(String word, String language) {
+		String query = FIELD_TOKEN + " = ? AND " + FIELD_LANGUAGE + " = ?";
+		Cursor cursor = database.query(TABLE_WORD, null, query, new String[] { word, language }, null, null, null);
 		cursor.moveToFirst();
 		if (cursor.isAfterLast()) {
 			cursor.close();
@@ -48,7 +67,7 @@ public class WordDao extends BaseDao {
 		ContentValues cv = new ContentValues();
 		cv.put(FIELD_LANGUAGE, word.getLanguage());
 		cv.put(FIELD_TOKEN, word.getToken());
-		long id = db.insert(TABLE_WORD, null, cv);
+		long id = database.insert(TABLE_WORD, null, cv);
 		word.setId(Long.toString(id));
 	}
 

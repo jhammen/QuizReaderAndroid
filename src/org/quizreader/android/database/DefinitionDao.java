@@ -22,6 +22,7 @@ import java.util.List;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 
 public class DefinitionDao extends BaseDao {
 
@@ -34,25 +35,18 @@ public class DefinitionDao extends BaseDao {
 		super(context);
 	}
 
-	public void save(Definition definition) {
+	public static long insertDefinition(SQLiteDatabase db, String def, long quizWordId) {
 		ContentValues cv = new ContentValues();
-		String def = definition.getText();
 		if (def.length() > 128) {
 			def = def.substring(0, 125) + "...";
 		}
 		cv.put(FIELD_TEXT, def);
-		cv.put(FIELD_WORD_ID, definition.getQuizWordId());
-		if (definition.getId() == null) {
-			long id = db.insert(TABLE_DEFINITIONS, null, cv);
-			definition.setId(Long.toString(id));
-		}
-		else {
-			db.update(TABLE_DEFINITIONS, cv, FIELD_ID + " =  ?", new String[] { definition.getId() });
-		}
+		cv.put(FIELD_WORD_ID, quizWordId);
+		return db.insert(TABLE_DEFINITIONS, null, cv);
 	}
 
 	public List<Definition> getDefinitions(String quizWordId) {
-		Cursor cursor = db.query(TABLE_DEFINITIONS, null, FIELD_WORD_ID + " = ?", new String[] { quizWordId }, null, null, null);
+		Cursor cursor = database.query(TABLE_DEFINITIONS, null, FIELD_WORD_ID + " = ?", new String[] { quizWordId }, null, null, null);
 		cursor.moveToFirst();
 		List<Definition> quizWords = new ArrayList<Definition>();
 		while (cursor.isAfterLast() == false) {

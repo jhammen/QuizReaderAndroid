@@ -32,6 +32,7 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 	private static final int REQUEST_READ = 2;
 
 	private TextView bigText;
+	private TitleDao titleDao;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -44,6 +45,7 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 		bigText = (TextView) findViewById(R.id.bigText);
 		bigText.setText(title.getFilepath());
 
+		titleDao = new TitleDao(this);
 	}
 
 	public void quizRead(View view) {
@@ -51,14 +53,13 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 			// if 1st paragraph of a new section then load words for that section
 			if (title.getParagraph() == 1) {
 				QzzFile qzzFile = new QzzFile(title.getFilepath());
-				LoadDefinitionsTask loadDefsTask = new LoadDefinitionsTask(this, title) {
+				new LoadDefinitionsTask(this, title) {
 					@Override
 					protected void onPostExecute(Integer result) {
 						super.onPostExecute(result);
 						teachWords();
 					}
-				};
-				loadDefsTask.execute(qzzFile.getDefinitionReader(title.getSection()));
+				}.execute(qzzFile.getDefinitionReader(title.getSection()));
 			}
 			else {
 				teachWords();
@@ -109,9 +110,8 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 	private void updateTitle(int section, int paragraph) {
 		title.setSection(section);
 		title.setParagraph(paragraph);
-		TitleDao titleDao = new TitleDao(this);
 		titleDao.open();
-		titleDao.saveTitle(title);
+		titleDao.updateTitle(title);
 		titleDao.close();
 	}
 }

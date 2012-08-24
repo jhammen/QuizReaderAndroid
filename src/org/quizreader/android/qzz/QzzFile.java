@@ -23,10 +23,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
-
-import org.xmlpull.v1.XmlPullParserException;
 
 public class QzzFile extends ZipFile {
 
@@ -54,21 +51,20 @@ public class QzzFile extends ZipFile {
 			String name = nextElement.getName();
 			if (name.endsWith(".xml") && !name.equals(COMMON_XML)) {
 				definitionEntries.add(nextElement);
-			}
-			else if (name.endsWith(".html")) {
+			} else if (name.endsWith(".html")) {
 				xhtmlEntries.add(nextElement);
 			}
 		}
 	}
 
-	public DefinitionReader getCommonDefinitionReader() throws ZipException, IOException, XmlPullParserException {
+	public InputStreamReader getCommonDefinitionReader() throws IOException {
 		ZipEntry entry = getEntry(COMMON_XML);
-		return new DefinitionReader(getInputStream(entry), entry.getSize(), 0);
+		return new InputStreamReader(getInputStream(entry));
 	}
 
-	public DefinitionReader getDefinitionReader(int section) throws IOException, XmlPullParserException {
+	public InputStreamReader getDefinitionReader(int section) throws IOException {
 		ZipEntry entry = definitionEntries.get(section);
-		return new DefinitionReader(getInputStream(entry), entry.getSize(), section);
+		return new InputStreamReader(getInputStream(entry));
 	}
 
 	public String getHtml(int section, int paragraph) throws IOException {

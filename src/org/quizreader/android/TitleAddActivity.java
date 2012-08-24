@@ -56,22 +56,17 @@ public class TitleAddActivity extends ListActivity {
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 
 		final File file = quizFiles.get(position);
-		// first add title to db
-		final Title title = new Title();
-		titleDao.open();
-		title.setName("Title goes here");
-		title.setLanguage("fr");
-		title.setFilepath(file.getAbsolutePath());
-		titleDao.saveTitle(title);
-		titleDao.close();
 
-		LoadDefinitionsTask loadTitleDefsTask = new LoadDefinitionsTask(this, title) {
+		LoadDefinitionsTask loadTitleDefsTask = new LoadDefinitionsTask(this, null) {
 
 			@Override
-			protected void onCancelled() {
-				titleDao.open();
-				titleDao.deleteTitle(title.getId());
-				titleDao.close();
+			protected void setup() {
+				title = new Title();
+				title.setName("Title goes here");
+				title.setLanguage("fr");
+				title.setFilepath(file.getAbsolutePath());
+				long titleId = TitleDao.insertTitle(db, title);
+				title.setId(Long.toString(titleId));
 			}
 
 			@Override

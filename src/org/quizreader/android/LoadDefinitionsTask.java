@@ -16,29 +16,39 @@
  */
 package org.quizreader.android;
 
-import org.quizreader.android.database.Entry;
-import org.quizreader.android.database.QuizWord;
+import java.io.Reader;
+
+import org.quizreader.android.database.DefinitionDao;
+import org.quizreader.android.database.QRDatabaseHelper;
 import org.quizreader.android.database.QuizWordDao;
 import org.quizreader.android.database.Title;
-import org.quizreader.android.database.Word;
 import org.quizreader.android.database.WordDao;
-import org.quizreader.android.qzz.DefinitionReader;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 
-public class LoadDefinitionsTask extends AsyncTask<DefinitionReader, Integer, Integer> {
+public class LoadDefinitionsTask extends AsyncTask<Reader, String, Integer> {
 
-	private WordDao wordDao;
-	private QuizWordDao quizWordDao;
+	private static final String ATTRIBUTE_TITLE = "title";
+	private static final String TAG_DEF = "def";
+	private static final String TAG_DEFINITIONS = "definitions";
+	private static final String TAG_ENTRY = "entry";
+	private static final Object TAG_PARAGRAPH = "paragraph";
+
+	private QRDatabaseHelper databaseHelper;
+	protected SQLiteDatabase db;
+
 	private ProgressDialog dialog;
-	private Title title;
+	protected Title title;
 
 	public LoadDefinitionsTask(Context context, Title title) {
 		this.title = title;
-		wordDao = new WordDao(context);
-		quizWordDao = new QuizWordDao(context);
+		databaseHelper = new QRDatabaseHelper(context);
+
 		dialog = new ProgressDialog(context) {
 			@Override
 			public void onBackPressed() {
@@ -46,61 +56,102 @@ public class LoadDefinitionsTask extends AsyncTask<DefinitionReader, Integer, In
 				super.onBackPressed();
 			}
 		};
-		dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+		dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 	}
 
+	@Override
 	protected void onPreExecute() {
 		this.dialog.setMessage("Loading QuizWords...");
 		this.dialog.show();
 	}
 
 	@Override
-	protected Integer doInBackground(DefinitionReader... readers) {
-		DefinitionReader definitionReader = readers[0];
-		try {
-			wordDao.open();
-			quizWordDao.open(wordDao.getDatabase());
-			// delete existing quizwords
-			quizWordDao.deleteQuizWords(title.getId(), definitionReader.getSectionNumber());
-			Entry entry = definitionReader.nextEntry();
-			while (entry != null && !isCancelled()) {
-				// create if word does not exist for this language
-				Word word = wordDao.getWord(entry.getWord(), title.getLanguage());
-				if (word == null) {
-					word = new Word();
-					word.setLanguage(title.getLanguage());
-					word.setToken(entry.getWord());
-					wordDao.save(word);
-				}
-				// create new QuizWord
-				QuizWord quizWord = new QuizWord();
-				quizWord.setWord(word);
-				quizWord.setTitleId(title.getId());
-				quizWord.setSection(entry.getSection());
-				quizWord.setParagraph(entry.getParagraph());
-				quizWord.setDefinitions(entry.getDefinitions());
-				quizWordDao.save(quizWord);
+	protected Integer doInBackground(Reader... readers) {
 
-				// publish progress and grab next entry
-				long progress = entry.getXmlPosition() * 100 / definitionReader.getTotalSize();
-				publishProgress((int) progress);
-				entry = definitionReader.nextEntry();
+		db = databaseHelper.getWritableDatabase();
+		db.beginTransaction();
+		setup();
+
+		int paragraphCounter = 1;
+
+		try {
+			XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+			factory.setNamespaceAware(true);
+			XmlPullParser xpp = factory.newPullParser();
+
+			xpp.setInput(readers[0]);
+
+			// delete existing quizwords
+			QuizWordDao.deleteQuizWords(db, title.getId(), title.getSection());
+
+			// String language = null;
+			long quizWordId = -1;
+			int wordCounter = 0;
+
+			int eventType = xpp.getEventType();
+			while (eventType != XmlPullParser.END_DOCUMENT && !isCancelled()) {
+				String name = xpp.getName();
+				if (eventType == XmlPullParser.START_TAG) {
+					if (TAG_DEFINITIONS.equals(name)) {
+						// language = xpp.getAttributeValue(null, ATTRIBUTE_LANGUAGE);
+						// if (language == null || language.length() != 2) {
+						// dialog.setMessage("Bad language attribute on definitions");
+						// return 0;
+						// }
+					}
+					if (TAG_ENTRY.equals(name)) {
+						String word = xpp.getAttributeValue(null, ATTRIBUTE_TITLE);
+						// see if word exists in db
+						long wordId = WordDao.insertOrGetWordId(db, title.getLanguage(), word);
+						// create new QuizWord
+						String titleId = title.getId();
+						int section = title.getSection();
+						quizWordId = QuizWordDao.insertQuizWord(db, wordId, titleId, section, paragraphCounter);
+
+					}
+					else if (TAG_DEF.equals(name)) {
+						xpp.next();
+						String text = xpp.getText();
+						if (text == null) {
+							text = "";
+						}
+						DefinitionDao.insertDefinition(db, text, quizWordId);
+					}
+				}
+				else if (eventType == XmlPullParser.END_TAG) {
+					if (TAG_ENTRY.equals(name)) {
+						publishProgress("Loaded " + wordCounter++ + " words");
+					}
+					if (TAG_DEFINITIONS.equals(name)) {
+						break;
+					}
+					else if (TAG_PARAGRAPH.equals(name)) {
+						paragraphCounter++;
+					}
+				}
+				eventType = xpp.next();
+			}
+			if (!isCancelled()) {
+				db.setTransactionSuccessful();
 			}
 		} catch (Exception e) {
-			// TODO: report error
+			publishProgress(e.getClass() + ": " + e.getLocalizedMessage());
 			e.printStackTrace();
 		} finally {
-			wordDao.close();
-			quizWordDao.close();
-			definitionReader.close();
+			db.endTransaction();
+			db.close();
 		}
-		return definitionReader.getParagraphCount();
+		return paragraphCounter;
+	}
+
+	protected void setup() {
+		// for subclasses, default implementation nothing
 	}
 
 	@Override
-	protected void onProgressUpdate(Integer... values) {
-		for (int value : values) {
-			dialog.setProgress(value);
+	protected void onProgressUpdate(String... values) {
+		for (String value : values) {
+			dialog.setMessage(value);
 		}
 	}
 

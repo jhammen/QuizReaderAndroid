@@ -22,22 +22,22 @@ import android.database.sqlite.SQLiteDatabase;
 public class BaseDao {
 
 	protected QRDatabaseHelper databaseHelper;
-	protected SQLiteDatabase db;
+	protected SQLiteDatabase database;
 
 	public BaseDao(Context context) {
 		databaseHelper = new QRDatabaseHelper(context);
 	}
 
 	public void open() {
-		db = databaseHelper.getWritableDatabase();
+		database = databaseHelper.getWritableDatabase();
 	}
 
 	public void open(SQLiteDatabase database) {
-		db = database;
+		this.database = database;
 	}
 
 	public SQLiteDatabase getDatabase() {
-		return db;
+		return database;
 	}
 
 	public void close() {
