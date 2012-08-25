@@ -104,7 +104,11 @@ public class PageQuizActivity extends BaseQuizReadActivity {
 
 	private QuizWord findSimilarWord() {
 		List<QuizWord> quizWordsLike = Collections.emptyList();
+		int attempts = 0;
 		while (quizWordsLike.size() == 0) {
+			if (attempts++ > 10) {
+				return quizWordDao.getRandomQuizWord(title.getId(), testWord.getId());
+			}
 			String token = testWord.getWord().getToken();
 			int randIndex = random.nextInt(token.length() - 1);
 			String like = token.charAt(0) + "%" + token.charAt(randIndex) + "%";
