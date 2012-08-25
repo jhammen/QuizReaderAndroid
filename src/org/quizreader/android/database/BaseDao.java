@@ -21,7 +21,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 public class BaseDao {
 
-	protected QRDatabaseHelper databaseHelper;
+	private QRDatabaseHelper databaseHelper;
 	protected SQLiteDatabase database;
 
 	public BaseDao(Context context) {

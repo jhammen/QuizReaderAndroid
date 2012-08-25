@@ -34,7 +34,6 @@ public class TitleDao extends BaseDao {
 	static final String FIELD_SECTION = "section";
 	static final String FIELD_TOTAL_SECTIONS = "total_sections";
 	static final String FIELD_PARAGRAPH = "paragraph";
-	static final String FIELD_TOTAL_PARAGRAPHS = "total_paragraphs";
 
 	public TitleDao(Context context) {
 		super(context);

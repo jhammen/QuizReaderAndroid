@@ -27,7 +27,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class QRDatabaseHelper extends SQLiteOpenHelper {
 
-	Context context;
+	private Context context;
 
 	public QRDatabaseHelper(Context context) {
 		super(context, "QuizReader", null, 1);
