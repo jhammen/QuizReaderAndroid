@@ -20,24 +20,21 @@
     <RadioButton
         android:id="@+id/radioButton1"
         android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="0.33"         
+        android:layout_height="wrap_content"
         android:onClick="answer"
         android:text="" />
 
     <RadioButton
         android:id="@+id/radioButton2"
         android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="0.33"         
+        android:layout_height="wrap_content"
         android:onClick="answer"
         android:text="" />
 
     <RadioButton
         android:id="@+id/radioButton3"
         android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="0.33"         
+        android:layout_height="wrap_content"
         android:onClick="answer"
         android:text="" />
     
