@@ -27,6 +27,7 @@ public class WordDao extends BaseDao {
 	static final String FIELD_ID = "_id";
 	static final String FIELD_LANGUAGE = "language";
 	static final String FIELD_TOKEN = "token";
+	static final String FIELD_QUIZ_LEVEL = "quiz_level";
 
 	public WordDao(Context context) {
 		super(context);
@@ -42,8 +43,10 @@ public class WordDao extends BaseDao {
 			ContentValues cv = new ContentValues();
 			cv.put(FIELD_LANGUAGE, language);
 			cv.put(FIELD_TOKEN, word);
+			cv.put(FIELD_QUIZ_LEVEL, 0);
 			wordId = db.insert(TABLE_WORD, null, cv);
-		} else {
+		}
+		else {
 			wordId = cursor.getLong(cursor.getColumnIndex(FIELD_ID));
 			cursor.close();
 		}
@@ -67,6 +70,7 @@ public class WordDao extends BaseDao {
 		ContentValues cv = new ContentValues();
 		cv.put(FIELD_LANGUAGE, word.getLanguage());
 		cv.put(FIELD_TOKEN, word.getToken());
+		cv.put(FIELD_QUIZ_LEVEL, word.getQuizLevel());
 		long id = database.insert(TABLE_WORD, null, cv);
 		word.setId(Long.toString(id));
 	}
@@ -76,6 +80,7 @@ public class WordDao extends BaseDao {
 		word.setId(cursor.getString(cursor.getColumnIndex(FIELD_ID)));
 		word.setLanguage(cursor.getString(cursor.getColumnIndex(FIELD_LANGUAGE)));
 		word.setToken(cursor.getString(cursor.getColumnIndex(FIELD_TOKEN)));
+		word.setQuizLevel(cursor.getInt(cursor.getColumnIndex(FIELD_QUIZ_LEVEL)));
 		return word;
 	}
 

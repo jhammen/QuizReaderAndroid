@@ -21,6 +21,7 @@ public class Word {
 	private String id;
 	private String language;
 	private String token;
+	private int quizLevel;
 
 	public String getId() {
 		return id;
@@ -46,4 +47,11 @@ public class Word {
 		this.token = word;
 	}
 
+	public int getQuizLevel() {
+		return quizLevel;
+	}
+
+	public void setQuizLevel(int quizLevel) {
+		this.quizLevel = quizLevel;
+	}
 }

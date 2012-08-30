@@ -2,7 +2,8 @@
 create table word ( 
 	_id			integer primary key autoincrement,
 	language	char(2),
-	token		varchar(128) unique
+	token		varchar(128) unique,
+	quiz_level	int
 );
 
 create index word_language_index on word(language);
