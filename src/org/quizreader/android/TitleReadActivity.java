@@ -92,19 +92,19 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 			else if (requestCode == REQUEST_READ) {
 				// update paragraph
 				updateTitle(title.getSection(), title.getParagraph() + 1);
-				// update view
-				updateProgressView();
+				updateTitleView();
+				teachWords();
 			}
 		}
-		else if (requestCode == REQUEST_READ && resultCode == RESULT_FIRST_USER) {
-			// TODO: what if we hit the last section?
+		else if (requestCode == REQUEST_READ && resultCode == PageReadActivity.RESULT_END_SECTION) { //
+			// TODO: what if we hit the end of the last section?
 			updateTitle(title.getSection() + 1, 1);
-			updateProgressView();
+			updateTitleView();
 		}
 	}
 
-	private void updateProgressView() {
-		bigText.setText("next section: " + title.getSection() + ", paragraph: " + title.getParagraph());
+	private void updateTitleView() {
+		bigText.setText("chapter: " + title.getSection() + ", paragraph: " + title.getParagraph());
 	}
 
 	private void updateTitle(int section, int paragraph) {

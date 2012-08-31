@@ -26,6 +26,8 @@ import android.webkit.WebView;
 
 public class PageReadActivity extends BaseQuizReadActivity {
 
+	public static final int RESULT_END_SECTION = RESULT_FIRST_USER;
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -36,7 +38,7 @@ public class PageReadActivity extends BaseQuizReadActivity {
 			QzzFile qzzFile = new QzzFile(title.getFilepath());
 			String html = qzzFile.getHtml(title.getSection(), title.getParagraph());
 			if (html.length() == 0) { // end of the file
-				setResult(RESULT_FIRST_USER);
+				setResult(RESULT_END_SECTION);
 				finish();
 			}
 			webview.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
