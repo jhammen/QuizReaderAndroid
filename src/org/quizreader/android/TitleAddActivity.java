@@ -1,3 +1,19 @@
+/*
+ This file is part of QuizReader.
+
+ QuizReader is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ QuizReader is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.quizreader.android;
 
 import java.io.File;
@@ -56,28 +72,29 @@ public class TitleAddActivity extends ListActivity {
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 
 		final File file = quizFiles.get(position);
-
-		LoadDefinitionsTask loadTitleDefsTask = new LoadDefinitionsTask(this, null) {
-
-			@Override
-			protected void setup() {
-				title = new Title();
-				title.setName("Title goes here");
-				title.setLanguage("fr");
-				title.setFilepath(file.getAbsolutePath());
-				long titleId = TitleDao.insertTitle(db, title);
-				title.setId(Long.toString(titleId));
-			}
-
-			@Override
-			protected void onPostExecute(Integer result) {
-				super.onPostExecute(result);
-				finish();
-			}
-
-		};
 		try {
-			QzzFile qzzFile = new QzzFile(file);
+			final QzzFile qzzFile = new QzzFile(file);
+			final String titleName = qzzFile.getTitle();
+
+			LoadDefinitionsTask loadTitleDefsTask = new LoadDefinitionsTask(this, null) {
+
+				@Override
+				protected void setup() {
+					title = new Title();
+					title.setName(titleName);
+					title.setLanguage("fr");
+					title.setFilepath(file.getAbsolutePath());
+					long titleId = TitleDao.insertTitle(db, title);
+					title.setId(Long.toString(titleId));
+				}
+
+				@Override
+				protected void onPostExecute(Integer result) {
+					super.onPostExecute(result);
+					finish(); // activity is done when task is
+				}
+
+			};
 			loadTitleDefsTask.execute(qzzFile.getCommonDefinitionReader());
 		} catch (Exception ex) {
 			ex.printStackTrace();

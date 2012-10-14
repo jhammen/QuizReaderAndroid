@@ -16,8 +16,6 @@
  */
 package org.quizreader.android;
 
-import java.io.IOException;
-
 import org.quizreader.android.qzz.QzzFile;
 
 import android.os.Bundle;
@@ -42,7 +40,7 @@ public class PageReadActivity extends BaseQuizReadActivity {
 				finish();
 			}
 			webview.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
-		} catch (IOException ex) {
+		} catch (Exception ex) {
 			webview.loadData(ex.getLocalizedMessage(), "text/plain", null);
 		}
 	}

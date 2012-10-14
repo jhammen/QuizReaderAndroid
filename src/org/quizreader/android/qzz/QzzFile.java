@@ -21,24 +21,36 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 public class QzzFile extends ZipFile {
 
 	private static final String COMMON_XML = "common.xml";
+	private static final String META_XML = "meta.xml";
+	private static final String TAG_PROPERTY = "property";
+
 	private List<ZipEntry> definitionEntries;
 	private List<ZipEntry> xhtmlEntries;
+	private Map<String, String> meta;
 
-	public QzzFile(File file) throws IOException {
+	public QzzFile(File file) throws IOException, XmlPullParserException {
 		super(file);
 		loadEntries();
+		loadMeta();
 	}
 
-	public QzzFile(String filepath) throws IOException {
+	public QzzFile(String filepath) throws IOException, XmlPullParserException {
 		super(filepath);
 		loadEntries();
+		loadMeta();
 	}
 
 	private void loadEntries() {
@@ -51,10 +63,37 @@ public class QzzFile extends ZipFile {
 			String name = nextElement.getName();
 			if (name.endsWith(".xml") && !name.equals(COMMON_XML)) {
 				definitionEntries.add(nextElement);
-			} else if (name.endsWith(".html")) {
+			}
+			else if (name.endsWith(".html")) {
 				xhtmlEntries.add(nextElement);
 			}
 		}
+	}
+
+	public void loadMeta() throws XmlPullParserException, IOException {
+		meta = new HashMap<String, String>();
+		XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+		factory.setNamespaceAware(true);
+		XmlPullParser xpp = factory.newPullParser();
+		ZipEntry entry = getEntry(META_XML);
+		InputStreamReader reader = new InputStreamReader(getInputStream(entry));
+		xpp.setInput(reader);
+		int eventType = xpp.getEventType();
+		while (eventType != XmlPullParser.END_DOCUMENT) {
+			String name = xpp.getName();
+			if (eventType == XmlPullParser.START_TAG) {
+				if (TAG_PROPERTY.equals(name)) {
+					String propertyName = xpp.getAttributeValue(null, "name");
+					String propertyValue = xpp.getAttributeValue(null, "value");
+					meta.put(propertyName, propertyValue);
+				}
+			}
+			eventType = xpp.next();
+		}
+	}
+
+	public String getTitle() {
+		return meta.get("title");
 	}
 
 	public InputStreamReader getCommonDefinitionReader() throws IOException {
@@ -91,4 +130,5 @@ public class QzzFile extends ZipFile {
 		buff.deleteCharAt(buff.length() - 1);
 		return buff.toString().trim();
 	}
+
 }
