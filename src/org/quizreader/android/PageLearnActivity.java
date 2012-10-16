@@ -43,7 +43,7 @@ public class PageLearnActivity extends BaseQuizReadActivity {
 		// query for words
 		QuizWordDao quizWordDao = new QuizWordDao(this);
 		quizWordDao.open();
-		quizWords = quizWordDao.getQuizWords(title.getId(), title.getSection(), title.getParagraph());
+		quizWords = quizWordDao.getNewQuizWords(title.getId(), title.getSection(), title.getParagraph());
 		quizWordDao.close();
 		counter = 0;
 		if (quizWords.size() == 0) { // no words means nothing to do here

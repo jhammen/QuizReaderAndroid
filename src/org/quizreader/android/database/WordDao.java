@@ -66,13 +66,12 @@ public class WordDao extends BaseDao {
 		return ret;
 	}
 
-	public void save(Word word) {
+	public void update(Word word) {
 		ContentValues cv = new ContentValues();
-		cv.put(FIELD_LANGUAGE, word.getLanguage());
-		cv.put(FIELD_TOKEN, word.getToken());
+		// cv.put(FIELD_LANGUAGE, word.getLanguage());
+		// cv.put(FIELD_TOKEN, word.getToken());
 		cv.put(FIELD_QUIZ_LEVEL, word.getQuizLevel());
-		long id = database.insert(TABLE_WORD, null, cv);
-		word.setId(Long.toString(id));
+		database.update(TABLE_WORD, cv, FIELD_ID + " =  ?", new String[] { word.getId() });
 	}
 
 	private Word cursorToWord(Cursor cursor) {

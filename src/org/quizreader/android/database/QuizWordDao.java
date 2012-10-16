@@ -68,12 +68,22 @@ public class QuizWordDao extends BaseDao {
 		return db.insert(QuizWordDao.TABLE_QUIZ_WORDS, null, cv);
 	}
 
-	public List<QuizWord> getQuizWords(String titleId, int section, int paragraph) {
+	public List<QuizWord> getNewQuizWords(String titleId, int section, int paragraph) {
 		String query = joinQueryString();
 		query += " AND " + FIELD_TITLE_ID + "=? AND " + FIELD_SECTION + "=? AND " + FIELD_PARAGRAPH + "=?";
+		query += " AND " + WordDao.FIELD_QUIZ_LEVEL + "=0";
 		String[] queryArgs = new String[] { titleId, Integer.toString(section), Integer.toString(paragraph) };
 		Cursor cursor = database.rawQuery(query, queryArgs);
-		// db.query(TABLE_QUIZ_WORDS, null, query, queryArgs, null, null, null);
+		return cursorToQuizWords(cursor);
+	}
+
+	public List<QuizWord> getMoreQuizWords(String titleId, int section, int paragraph, int count) {
+		String query = joinQueryString();
+		query += " AND " + FIELD_TITLE_ID + "=? AND " + FIELD_SECTION + "=? AND " + FIELD_PARAGRAPH + "=?";
+		query += " AND " + WordDao.FIELD_QUIZ_LEVEL + ">0 ORDER BY " + WordDao.FIELD_QUIZ_LEVEL;
+		query += " LIMIT ?";
+		String[] queryArgs = new String[] { titleId, Integer.toString(section), Integer.toString(paragraph), Integer.toString(count) };
+		Cursor cursor = database.rawQuery(query, queryArgs);
 		return cursorToQuizWords(cursor);
 	}
 
@@ -98,8 +108,8 @@ public class QuizWordDao extends BaseDao {
 	}
 
 	private String joinQueryString() {
-		String query = "SELECT " + TABLE_QUIZ_WORDS + "." + FIELD_ID + ",";
-		query += FIELD_WORD_ID + "," + WordDao.FIELD_LANGUAGE + "," + WordDao.FIELD_TOKEN + ",";
+		String query = "SELECT " + TABLE_QUIZ_WORDS + "." + FIELD_ID + "," + FIELD_WORD_ID + ",";
+		query += WordDao.FIELD_LANGUAGE + "," + WordDao.FIELD_TOKEN + "," + WordDao.FIELD_QUIZ_LEVEL + ",";
 		query += FIELD_TITLE_ID + "," + FIELD_SECTION + "," + FIELD_PARAGRAPH;
 		query += " FROM " + TABLE_QUIZ_WORDS + ", " + WordDao.TABLE_WORD;
 		query += " WHERE " + FIELD_WORD_ID + "= " + WordDao.TABLE_WORD + "." + WordDao.FIELD_ID;
@@ -140,6 +150,7 @@ public class QuizWordDao extends BaseDao {
 		word.setId(cursor.getString(cursor.getColumnIndex(FIELD_WORD_ID)));
 		word.setToken(cursor.getString(cursor.getColumnIndex(WordDao.FIELD_TOKEN)));
 		word.setLanguage(cursor.getString(cursor.getColumnIndex(WordDao.FIELD_LANGUAGE)));
+		word.setQuizLevel(cursor.getInt(cursor.getColumnIndex(WordDao.FIELD_QUIZ_LEVEL)));
 		quizWord.setWord(word);
 		quizWord.setSection(cursor.getInt(cursor.getColumnIndex(FIELD_SECTION)));
 		quizWord.setParagraph(cursor.getInt(cursor.getColumnIndex(FIELD_PARAGRAPH)));

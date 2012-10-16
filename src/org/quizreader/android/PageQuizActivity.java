@@ -24,6 +24,7 @@ import java.util.Random;
 import org.quizreader.android.database.Definition;
 import org.quizreader.android.database.QuizWord;
 import org.quizreader.android.database.QuizWordDao;
+import org.quizreader.android.database.Word;
 import org.quizreader.android.database.WordDao;
 
 import android.graphics.Color;
@@ -67,9 +68,16 @@ public class PageQuizActivity extends BaseQuizReadActivity {
 			radioButton.setEnabled(false);
 		}
 
+		wordDao = new WordDao(this);
 		quizWordDao = new QuizWordDao(this);
 		quizWordDao.open();
-		quizWords = quizWordDao.getQuizWords(title.getId(), title.getSection(), title.getParagraph());
+		quizWords = quizWordDao.getNewQuizWords(title.getId(), title.getSection(), title.getParagraph());
+		// do we have enough?
+		if (quizWords.size() < 10) {
+			int count = 10 - quizWords.size();
+			List<QuizWord> moreQuizWords = quizWordDao.getMoreQuizWords(title.getId(), title.getSection(), title.getParagraph(), count);
+			quizWords.addAll(moreQuizWords);
+		}
 		quizWordDao.close();
 		if (quizWords.size() == 0) { // no words means nothing to do here
 			setResult(RESULT_OK);
@@ -143,12 +151,26 @@ public class PageQuizActivity extends BaseQuizReadActivity {
 	}
 
 	public void answer(View view) {
+
+		// disable all radio buttons
+		for (RadioButton radioButton : radioButtons) {
+			radioButton.setEnabled(false);
+		}
+
 		// paint correct answer green
 		RadioButton correctButton = (RadioButton) findViewById(correctAnswerId);
 		correctButton.setBackgroundColor(Color.GREEN);
 		correctButton.getBackground().setAlpha(90);
 		int selectedId = radioGroup.getCheckedRadioButtonId();
+
+		// correct answer was given
 		if (selectedId == correctAnswerId) {
+			// increment quiz level and remove from the current list
+			Word word = testWord.getWord();
+			word.setQuizLevel(word.getQuizLevel() + 1);
+			wordDao.open();
+			wordDao.update(word);
+			wordDao.close();
 			quizWords.remove(testWord);
 			progressBar.incrementProgressBy(1);
 		}
@@ -157,9 +179,8 @@ public class PageQuizActivity extends BaseQuizReadActivity {
 			selectedButton.setBackgroundColor(Color.RED);
 			selectedButton.getBackground().setAlpha(90);
 		}
-		for (RadioButton radioButton : radioButtons) {
-			radioButton.setEnabled(false);
-		}
+
+		// enable button for next
 		okButton.setEnabled(true);
 	}
 
