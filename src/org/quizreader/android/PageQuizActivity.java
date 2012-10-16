@@ -24,6 +24,7 @@ import java.util.Random;
 import org.quizreader.android.database.Definition;
 import org.quizreader.android.database.QuizWord;
 import org.quizreader.android.database.QuizWordDao;
+import org.quizreader.android.database.WordDao;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -42,6 +43,7 @@ public class PageQuizActivity extends BaseQuizReadActivity {
 	private Button okButton;
 	private ProgressBar progressBar;
 
+	private WordDao wordDao;
 	private QuizWordDao quizWordDao;
 	private List<QuizWord> quizWords;
 	private Random random;
@@ -110,7 +112,7 @@ public class PageQuizActivity extends BaseQuizReadActivity {
 				return quizWordDao.getRandomQuizWord(title.getId(), testWord.getId());
 			}
 			String token = testWord.getWord().getToken();
-			int randIndex = random.nextInt(token.length() - 1);
+			int randIndex = token.length() > 1 ? random.nextInt(token.length() - 1) : 0;
 			String like = token.charAt(0) + "%" + token.charAt(randIndex) + "%";
 			quizWordsLike = quizWordDao.getQuizWordsLike(title.getId(), testWord.getId(), like);
 		}
@@ -118,15 +120,18 @@ public class PageQuizActivity extends BaseQuizReadActivity {
 		return quizWordsLike.get(randomIndex);
 	}
 
-	private void fillButton(QuizWord quizWord, int i) {
+	private void fillButton(QuizWord quizWord, int index) {
 		StringBuffer buff = new StringBuffer();
-		for (Definition def : quizWord.getDefinitions()) {
-			buff.append(def.getText() + "; ");
+		List<Definition> defs = quizWord.getDefinitions();
+		for (int i = 0; i < defs.size(); i++) {
+			buff.append(defs.get(i).getText());
+			if (i + 1 != defs.size()) {
+				buff.append("; ");
+			}
 		}
-		String defString = buff.toString().substring(0, buff.length() - 2);
-		radioButtons[i].setText(defString);
-		radioButtons[i].setBackgroundColor(Color.BLACK);
-		radioButtons[i].setEnabled(true);
+		radioButtons[index].setText(buff.toString());
+		radioButtons[index].setBackgroundColor(Color.BLACK);
+		radioButtons[index].setEnabled(true);
 	}
 
 	private int nextEmptyIndex() {

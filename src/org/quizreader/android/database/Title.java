@@ -23,6 +23,7 @@ public class Title {
 	private String name;
 	private String filepath;
 	private int section = 1;
+	private boolean sectionLoaded = false;
 	private int totalSections;
 	private int paragraph = 1;
 
@@ -64,6 +65,14 @@ public class Title {
 
 	public void setSection(int section) {
 		this.section = section;
+	}
+
+	public boolean isSectionLoaded() {
+		return sectionLoaded;
+	}
+
+	public void setSectionLoaded(boolean sectionLoaded) {
+		this.sectionLoaded = sectionLoaded;
 	}
 
 	public int getParagraph() {

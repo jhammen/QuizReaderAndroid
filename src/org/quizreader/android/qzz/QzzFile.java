@@ -19,6 +19,7 @@ package org.quizreader.android.qzz;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -61,7 +62,7 @@ public class QzzFile extends ZipFile {
 		while (entries.hasMoreElements()) {
 			ZipEntry nextElement = entries.nextElement();
 			String name = nextElement.getName();
-			if (name.endsWith(".xml") && !name.equals(COMMON_XML)) {
+			if (name.endsWith(".xml") && !name.equals(COMMON_XML) && !name.equals(META_XML)) {
 				definitionEntries.add(nextElement);
 			}
 			else if (name.endsWith(".html")) {
@@ -104,6 +105,11 @@ public class QzzFile extends ZipFile {
 	public InputStreamReader getDefinitionReader(int section) throws IOException {
 		ZipEntry entry = definitionEntries.get(section);
 		return new InputStreamReader(getInputStream(entry));
+	}
+
+	public Reader getHTMLReader(int section) throws IOException {
+		ZipEntry entry = xhtmlEntries.get(section);
+		return new InputStreamReader(getInputStream(entry), "UTF-8");
 	}
 
 	public String getHtml(int section, int paragraph) throws IOException {

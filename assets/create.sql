@@ -3,7 +3,7 @@ create table word (
 	_id			integer primary key autoincrement,
 	language	char(2),
 	token		varchar(128) unique,
-	quiz_level	int
+	quiz_level	integer
 );
 
 create index word_language_index on word(language);
@@ -15,8 +15,18 @@ create table title (
 	name		varchar(256) unique,
 	filepath	varchar(512) unique,
 	section				integer,
+	section_loaded		integer,
 	total_sections		integer,
 	paragraph			integer
+);
+
+create table definition (
+	_id			integer primary key autoincrement,
+ 	word_id		integer,
+ 	title_id	integer,
+ 	text		varchar(128),
+ 	foreign key(word_id) REFERENCES word(_id),
+ 	foreign key(title_id) REFERENCES title(_id) ON DELETE CASCADE
 );
 
 create table quizword (
@@ -27,11 +37,4 @@ create table quizword (
  	paragraph	integer,
  	foreign key(word_id)	references word(_id),	
  	foreign key(title_id)	references title(_id) ON DELETE CASCADE
-);
-
-create table definition (
-	_id			integer primary key autoincrement,
- 	quizword_id	integer,
- 	text		varchar(128),
- 	foreign key(quizword_id) REFERENCES quizword(_id) ON DELETE CASCADE
 )

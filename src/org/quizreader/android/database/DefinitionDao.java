@@ -29,24 +29,26 @@ public class DefinitionDao extends BaseDao {
 	private static final String TABLE_DEFINITIONS = "definition";
 	private static final String FIELD_ID = "_id";
 	private static final String FIELD_TEXT = "text";
-	private static final String FIELD_WORD_ID = "quizword_id";
+	private static final String FIELD_TITLE_ID = "title_id";
+	private static final String FIELD_WORD_ID = "word_id";
 
 	public DefinitionDao(Context context) {
 		super(context);
 	}
 
-	public static long insertDefinition(SQLiteDatabase db, String def, long quizWordId) {
+	public static long insertDefinition(SQLiteDatabase db, String def, String titleId, long wordId) {
 		ContentValues cv = new ContentValues();
 		if (def.length() > 128) {
 			def = def.substring(0, 125) + "...";
 		}
 		cv.put(FIELD_TEXT, def);
-		cv.put(FIELD_WORD_ID, quizWordId);
+		cv.put(FIELD_TITLE_ID, titleId);
+		cv.put(FIELD_WORD_ID, wordId);
 		return db.insert(TABLE_DEFINITIONS, null, cv);
 	}
 
-	public List<Definition> getDefinitions(String quizWordId) {
-		Cursor cursor = database.query(TABLE_DEFINITIONS, null, FIELD_WORD_ID + " = ?", new String[] { quizWordId }, null, null, null);
+	public List<Definition> getDefinitions(String wordId) {
+		Cursor cursor = database.query(TABLE_DEFINITIONS, null, FIELD_WORD_ID + " = ?", new String[] { wordId }, null, null, null);
 		cursor.moveToFirst();
 		List<Definition> quizWords = new ArrayList<Definition>();
 		while (cursor.isAfterLast() == false) {
@@ -60,7 +62,8 @@ public class DefinitionDao extends BaseDao {
 	private Definition cursorToDefinition(Cursor cursor) {
 		Definition def = new Definition();
 		def.setId(cursor.getString(cursor.getColumnIndex(FIELD_ID)));
-		def.setQuizWordId(cursor.getString(cursor.getColumnIndex(FIELD_WORD_ID)));
+		def.setTitleId(cursor.getString(cursor.getColumnIndex(FIELD_TITLE_ID)));
+		def.setWordId(cursor.getString(cursor.getColumnIndex(FIELD_WORD_ID)));
 		def.setText(cursor.getString(cursor.getColumnIndex(FIELD_TEXT)));
 		return def;
 	}

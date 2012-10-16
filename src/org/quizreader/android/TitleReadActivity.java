@@ -17,6 +17,8 @@
 
 package org.quizreader.android;
 
+import java.io.IOException;
+
 import org.quizreader.android.database.TitleDao;
 import org.quizreader.android.qzz.QzzFile;
 
@@ -51,13 +53,27 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 	public void quizRead(View view) {
 		try {
 			// if 1st paragraph of a new section then load words for that section
-			if (title.getParagraph() == 1) {
-				QzzFile qzzFile = new QzzFile(title.getFilepath());
+			if (title.getParagraph() == 1 && !title.isSectionLoaded()) {
+				final QzzFile qzzFile = new QzzFile(title.getFilepath());
 				new LoadDefinitionsTask(this, title) {
 					@Override
 					protected void onPostExecute(Integer result) {
 						super.onPostExecute(result);
-						teachWords();
+						try {
+							new LoadQuizWordsTask(TitleReadActivity.this, title) {
+								@Override
+								protected void onPostExecute(Integer result) {
+									super.onPostExecute(result);
+									title.setSectionLoaded(true);
+									titleDao.open();
+									titleDao.updateTitle(title);
+									titleDao.close();
+									teachWords();
+								}
+							}.execute(qzzFile.getHTMLReader(title.getSection()));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 					}
 				}.execute(qzzFile.getDefinitionReader(title.getSection()));
 			}
@@ -110,6 +126,7 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 	private void updateTitle(int section, int paragraph) {
 		title.setSection(section);
 		title.setParagraph(paragraph);
+		title.setSectionLoaded(false);
 		titleDao.open();
 		titleDao.updateTitle(title);
 		titleDao.close();

@@ -85,7 +85,7 @@ public class QuizWordDao extends BaseDao {
 		cursor.moveToFirst();
 		QuizWord quizWord = cursorToQuizWord(cursor);
 		cursor.close();
-		quizWord.setDefinitions(defDao.getDefinitions(quizWord.getId()));
+		quizWord.setDefinitions(defDao.getDefinitions(quizWord.getWord().getId()));
 		return quizWord;
 	}
 
@@ -126,7 +126,7 @@ public class QuizWordDao extends BaseDao {
 		cursor.close();
 
 		for (QuizWord quizWord : quizWords) {
-			quizWord.setDefinitions(defDao.getDefinitions(quizWord.getId()));
+			quizWord.setDefinitions(defDao.getDefinitions(quizWord.getWord().getId()));
 		}
 
 		return quizWords;

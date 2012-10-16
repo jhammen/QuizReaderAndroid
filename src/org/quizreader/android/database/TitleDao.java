@@ -32,6 +32,7 @@ public class TitleDao extends BaseDao {
 	static final String FIELD_ID = "_id";
 	static final String FIELD_LANGUAGE = "language";
 	static final String FIELD_SECTION = "section";
+	static final String FIELD_SECTION_LOADED = "section_loaded";
 	static final String FIELD_TOTAL_SECTIONS = "total_sections";
 	static final String FIELD_PARAGRAPH = "paragraph";
 
@@ -45,6 +46,7 @@ public class TitleDao extends BaseDao {
 		cv.put(FIELD_LANGUAGE, title.getLanguage());
 		cv.put(FIELD_FILEPATH, title.getFilepath());
 		cv.put(FIELD_SECTION, title.getSection());
+		cv.put(FIELD_SECTION_LOADED, 0);
 		cv.put(FIELD_TOTAL_SECTIONS, title.getTotalSections());
 		cv.put(FIELD_PARAGRAPH, title.getParagraph());
 		return db.insert(TABLE_TITLES, null, cv);
@@ -56,6 +58,7 @@ public class TitleDao extends BaseDao {
 		cv.put(FIELD_LANGUAGE, title.getLanguage());
 		cv.put(FIELD_FILEPATH, title.getFilepath());
 		cv.put(FIELD_SECTION, title.getSection());
+		cv.put(FIELD_SECTION_LOADED, title.isSectionLoaded() ? 1 : 0);
 		cv.put(FIELD_TOTAL_SECTIONS, title.getTotalSections());
 		cv.put(FIELD_PARAGRAPH, title.getParagraph());
 		database.update(TABLE_TITLES, cv, FIELD_ID + " =  ?", new String[] { title.getId() });
@@ -87,6 +90,7 @@ public class TitleDao extends BaseDao {
 		title.setName(cursor.getString(cursor.getColumnIndex(FIELD_NAME)));
 		title.setLanguage(cursor.getString(cursor.getColumnIndex(FIELD_LANGUAGE)));
 		title.setSection(cursor.getInt(cursor.getColumnIndex(FIELD_SECTION)));
+		title.setSectionLoaded(cursor.getInt(cursor.getColumnIndex(FIELD_SECTION_LOADED)) > 0);
 		title.setTotalSections(cursor.getInt(cursor.getColumnIndex(FIELD_TOTAL_SECTIONS)));
 		title.setParagraph(cursor.getInt(cursor.getColumnIndex(FIELD_PARAGRAPH)));
 		title.setFilepath(cursor.getString(cursor.getColumnIndex(FIELD_FILEPATH)));

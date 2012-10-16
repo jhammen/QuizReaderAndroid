@@ -19,7 +19,8 @@ package org.quizreader.android.database;
 public class Definition {
 
 	private String id;
-	private String quizWordId;
+	private String wordId;
+	private String titleId;
 	private String text;
 
 	public String getId() {
@@ -30,12 +31,20 @@ public class Definition {
 		this.id = id;
 	}
 
-	public String getQuizWordId() {
-		return quizWordId;
+	public String getWordId() {
+		return wordId;
 	}
 
-	public void setQuizWordId(String learnWordId) {
-		this.quizWordId = learnWordId;
+	public void setWordId(String wordId) {
+		this.wordId = wordId;
+	}
+
+	public String getTitleId() {
+		return titleId;
+	}
+
+	public void setTitleId(String titleId) {
+		this.titleId = titleId;
 	}
 
 	public String getText() {

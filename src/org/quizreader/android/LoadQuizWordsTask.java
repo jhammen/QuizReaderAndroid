@@ -17,9 +17,11 @@
 package org.quizreader.android;
 
 import java.io.Reader;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.quizreader.android.database.DefinitionDao;
 import org.quizreader.android.database.QRDatabaseHelper;
+import org.quizreader.android.database.QuizWordDao;
 import org.quizreader.android.database.Title;
 import org.quizreader.android.database.WordDao;
 import org.xmlpull.v1.XmlPullParser;
@@ -30,12 +32,10 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 
-public class LoadDefinitionsTask extends AsyncTask<Reader, String, Integer> {
+public class LoadQuizWordsTask extends AsyncTask<Reader, String, Integer> {
 
-	private static final String ATTRIBUTE_TITLE = "title";
-	private static final String TAG_DEF = "def";
-	private static final String TAG_DEFINITIONS = "definitions";
-	private static final String TAG_ENTRY = "entry";
+	private static final String TAG_TOKEN = "A";
+	private static final String TAG_PARAGRAPH = "P";
 
 	private QRDatabaseHelper databaseHelper;
 	protected SQLiteDatabase db;
@@ -43,14 +43,14 @@ public class LoadDefinitionsTask extends AsyncTask<Reader, String, Integer> {
 	private ProgressDialog dialog;
 	protected Title title;
 
-	public LoadDefinitionsTask(Context context, Title title) {
+	public LoadQuizWordsTask(Context context, Title title) {
 		this.title = title;
 		databaseHelper = new QRDatabaseHelper(context);
 
 		dialog = new ProgressDialog(context) {
 			@Override
 			public void onBackPressed() {
-				LoadDefinitionsTask.this.cancel(true);
+				LoadQuizWordsTask.this.cancel(true);
 				super.onBackPressed();
 			}
 		};
@@ -59,59 +59,54 @@ public class LoadDefinitionsTask extends AsyncTask<Reader, String, Integer> {
 
 	@Override
 	protected void onPreExecute() {
-		this.dialog.setMessage("Loading Definitions...");
+		this.dialog.setMessage("Loading QuizWords...");
 		this.dialog.show();
 	}
 
 	@Override
 	protected Integer doInBackground(Reader... readers) {
 
-		int wordCounter = 0;
-
 		db = databaseHelper.getWritableDatabase();
 		db.beginTransaction();
-		setup();
+
+		int paragraphCounter = 1;
 
 		try {
 			XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
 			factory.setNamespaceAware(true);
 			XmlPullParser xpp = factory.newPullParser();
+
 			xpp.setInput(readers[0]);
 
-			// String language = null;
-			long wordId = -1;
+			// delete existing quizwords
+			QuizWordDao.deleteQuizWords(db, title.getId(), title.getSection());
+
+			int wordCounter = 0;
+			Set<String> paraSet = new HashSet<String>();
 
 			int eventType = xpp.getEventType();
 			while (eventType != XmlPullParser.END_DOCUMENT && !isCancelled()) {
 				String name = xpp.getName();
 				if (eventType == XmlPullParser.START_TAG) {
-					if (TAG_DEFINITIONS.equals(name)) {
-						// language = xpp.getAttributeValue(null, ATTRIBUTE_LANGUAGE);
-						// if (language == null || language.length() != 2) {
-						// dialog.setMessage("Bad language attribute on definitions");
-						// return 0;
-						// }
-					}
-					if (TAG_ENTRY.equals(name)) {
-						String word = xpp.getAttributeValue(null, ATTRIBUTE_TITLE);
-						// get word id if already in db, otherwise insert
-						wordId = WordDao.insertOrGetWordId(db, title.getLanguage(), word);
-					}
-					else if (TAG_DEF.equals(name)) {
+					if (TAG_TOKEN.equalsIgnoreCase(name)) {
 						xpp.next();
-						String text = xpp.getText();
-						if (text == null) {
-							text = "";
+						String word = xpp.getText();
+						if (!paraSet.contains(word)) {
+							paraSet.add(word);
+							// see if word exists in db
+							long wordId = WordDao.insertOrGetWordId(db, title.getLanguage(), word);
+							// create new QuizWord
+							QuizWordDao.insertQuizWord(db, wordId, title.getId(), title.getSection(), paragraphCounter);
 						}
-						DefinitionDao.insertDefinition(db, text, title.getId(), wordId);
 					}
 				}
 				else if (eventType == XmlPullParser.END_TAG) {
-					if (TAG_ENTRY.equals(name)) {
-						publishProgress("Loaded " + wordCounter++ + " words");
+					if (TAG_TOKEN.equalsIgnoreCase(name)) {
+						publishProgress("Loaded " + wordCounter++ + " quiz words");
 					}
-					if (TAG_DEFINITIONS.equals(name)) {
-						break;
+					else if (TAG_PARAGRAPH.equalsIgnoreCase(name)) {
+						paraSet.clear();
+						paragraphCounter++;
 					}
 				}
 				eventType = xpp.next();
@@ -120,17 +115,13 @@ public class LoadDefinitionsTask extends AsyncTask<Reader, String, Integer> {
 				db.setTransactionSuccessful();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			publishProgress(e.getClass() + ": " + e.getLocalizedMessage());
+			e.printStackTrace();
 		} finally {
 			db.endTransaction();
 			db.close();
 		}
-		return wordCounter;
-	}
-
-	protected void setup() {
-		// for subclasses, default implementation nothing
+		return paragraphCounter;
 	}
 
 	@Override
