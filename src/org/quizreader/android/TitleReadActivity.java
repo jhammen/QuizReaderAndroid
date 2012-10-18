@@ -109,7 +109,7 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 				// update paragraph
 				updateTitle(title.getSection(), title.getParagraph() + 1);
 				updateTitleView();
-				teachWords();
+				backupProgress(); // too often?
 			}
 		}
 		else if (requestCode == REQUEST_READ && resultCode == PageReadActivity.RESULT_END_SECTION) { //
@@ -117,6 +117,17 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 			updateTitle(title.getSection() + 1, 1);
 			updateTitleView();
 		}
+	}
+
+	private void backupProgress() {
+		BackupWordsTask task = new BackupWordsTask(this) {
+			@Override
+			protected void onPostExecute(Integer result) {
+				super.onPostExecute(result);
+				teachWords();
+			}
+		};
+		task.execute((Void) null);
 	}
 
 	private void updateTitleView() {

@@ -16,6 +16,9 @@
  */
 package org.quizreader.android.database;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -72,6 +75,19 @@ public class WordDao extends BaseDao {
 		// cv.put(FIELD_TOKEN, word.getToken());
 		cv.put(FIELD_QUIZ_LEVEL, word.getQuizLevel());
 		database.update(TABLE_WORD, cv, FIELD_ID + " =  ?", new String[] { word.getId() });
+	}
+
+	public List<Word> getLearnedWords() {
+		String query = FIELD_QUIZ_LEVEL + " > 0";
+		Cursor cursor = database.query(TABLE_WORD, null, query, null, null, null, null);
+		cursor.moveToFirst();
+		List<Word> words = new ArrayList<Word>();
+		while (cursor.isAfterLast() == false) {
+			words.add(cursorToWord(cursor));
+			cursor.moveToNext();
+		}
+		cursor.close();
+		return words;
 	}
 
 	private Word cursorToWord(Cursor cursor) {
