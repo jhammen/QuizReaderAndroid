@@ -20,6 +20,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.quizreader.android.BackupWordsRestoreTask;
+
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.database.sqlite.SQLiteDatabase;
@@ -47,6 +49,7 @@ public class QRDatabaseHelper extends SQLiteOpenHelper {
 			System.out.println("loading sql: " + sql);
 			db.execSQL(sql);
 		}
+		new BackupWordsRestoreTask(context).execute((Void) null);
 	}
 
 	@Override

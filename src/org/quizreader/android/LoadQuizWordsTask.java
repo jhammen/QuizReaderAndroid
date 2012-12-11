@@ -94,7 +94,7 @@ public class LoadQuizWordsTask extends AsyncTask<Reader, String, Integer> {
 						if (!paraSet.contains(word)) {
 							paraSet.add(word);
 							// see if word exists in db
-							long wordId = WordDao.insertOrGetWordId(db, title.getLanguage(), word);
+							long wordId = WordDao.insertOrGetWordId(db, title.getLanguage(), word, 0);
 							// create new QuizWord
 							QuizWordDao.insertQuizWord(db, wordId, title.getId(), title.getSection(), paragraphCounter);
 						}

@@ -95,7 +95,7 @@ public class LoadDefinitionsTask extends AsyncTask<Reader, String, Integer> {
 					if (TAG_ENTRY.equals(name)) {
 						String word = xpp.getAttributeValue(null, ATTRIBUTE_TITLE);
 						// get word id if already in db, otherwise insert
-						wordId = WordDao.insertOrGetWordId(db, title.getLanguage(), word);
+						wordId = WordDao.insertOrGetWordId(db, title.getLanguage(), word, 0);
 					}
 					else if (TAG_DEF.equals(name)) {
 						xpp.next();

@@ -36,7 +36,7 @@ public class WordDao extends BaseDao {
 		super(context);
 	}
 
-	public static long insertOrGetWordId(SQLiteDatabase db, String language, String word) {
+	public static long insertOrGetWordId(SQLiteDatabase db, String language, String word, int quizLevel) {
 		long wordId;
 		String query = FIELD_TOKEN + " = ? AND " + FIELD_LANGUAGE + " = ?";
 		Cursor cursor = db.query(TABLE_WORD, null, query, new String[] { word, language }, null, null, null);
@@ -46,7 +46,7 @@ public class WordDao extends BaseDao {
 			ContentValues cv = new ContentValues();
 			cv.put(FIELD_LANGUAGE, language);
 			cv.put(FIELD_TOKEN, word);
-			cv.put(FIELD_QUIZ_LEVEL, 0);
+			cv.put(FIELD_QUIZ_LEVEL, quizLevel);
 			wordId = db.insert(TABLE_WORD, null, cv);
 		}
 		else {
@@ -67,6 +67,10 @@ public class WordDao extends BaseDao {
 		Word ret = cursorToWord(cursor);
 		cursor.close();
 		return ret;
+	}
+
+	public long insert(Word word) {
+		return insertOrGetWordId(database, word.getLanguage(), word.getToken(), word.getQuizLevel());
 	}
 
 	public void update(Word word) {
