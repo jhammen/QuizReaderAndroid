@@ -54,6 +54,14 @@ public class QzzFile extends ZipFile {
 		loadMeta();
 	}
 
+	public String getTitle() {
+		return meta.get("title");
+	}
+
+	public String getAuthor() {
+		return meta.get("author");
+	}
+
 	private void loadEntries() {
 		// scan entries
 		definitionEntries = new ArrayList<ZipEntry>();
@@ -71,7 +79,7 @@ public class QzzFile extends ZipFile {
 		}
 	}
 
-	public void loadMeta() throws XmlPullParserException, IOException {
+	private void loadMeta() throws XmlPullParserException, IOException {
 		meta = new HashMap<String, String>();
 		XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
 		factory.setNamespaceAware(true);
@@ -91,10 +99,6 @@ public class QzzFile extends ZipFile {
 			}
 			eventType = xpp.next();
 		}
-	}
-
-	public String getTitle() {
-		return meta.get("title");
 	}
 
 	public InputStreamReader getCommonDefinitionReader() throws IOException {

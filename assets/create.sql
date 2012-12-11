@@ -13,6 +13,7 @@ create table title (
 	_id			integer primary key autoincrement,
 	language	char(2),
 	name		varchar(256) unique,
+	author		varchar(128) unique,
 	filepath	varchar(512) unique,
 	section				integer,
 	section_loaded		integer,

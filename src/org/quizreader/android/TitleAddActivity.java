@@ -74,14 +74,13 @@ public class TitleAddActivity extends ListActivity {
 		final File file = quizFiles.get(position);
 		try {
 			final QzzFile qzzFile = new QzzFile(file);
-			final String titleName = qzzFile.getTitle();
-
 			LoadDefinitionsTask loadTitleDefsTask = new LoadDefinitionsTask(this, null) {
 
 				@Override
 				protected void setup() {
 					title = new Title();
-					title.setName(titleName);
+					title.setName(qzzFile.getTitle());
+					title.setAuthor(qzzFile.getAuthor());
 					title.setLanguage("fr");
 					title.setFilepath(file.getAbsolutePath());
 					long titleId = TitleDao.insertTitle(db, title);

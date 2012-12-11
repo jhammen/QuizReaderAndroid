@@ -21,6 +21,7 @@ public class Title {
 	private String id;
 	private String language;
 	private String name;
+	private String author;
 	private String filepath;
 	private int section = 1;
 	private boolean sectionLoaded = false;
@@ -49,6 +50,14 @@ public class Title {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(String author) {
+		this.author = author;
 	}
 
 	public String getFilepath() {

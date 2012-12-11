@@ -29,6 +29,7 @@ public class TitleDao extends BaseDao {
 	static final String TABLE_TITLES = "title";
 	static final String FIELD_FILEPATH = "filepath";
 	static final String FIELD_NAME = "name";
+	static final String FIELD_AUTHOR = "author";
 	static final String FIELD_ID = "_id";
 	static final String FIELD_LANGUAGE = "language";
 	static final String FIELD_SECTION = "section";
@@ -43,6 +44,7 @@ public class TitleDao extends BaseDao {
 	public static long insertTitle(SQLiteDatabase db, Title title) {
 		ContentValues cv = new ContentValues();
 		cv.put(FIELD_NAME, title.getName());
+		cv.put(FIELD_AUTHOR, title.getAuthor());
 		cv.put(FIELD_LANGUAGE, title.getLanguage());
 		cv.put(FIELD_FILEPATH, title.getFilepath());
 		cv.put(FIELD_SECTION, title.getSection());
@@ -88,6 +90,7 @@ public class TitleDao extends BaseDao {
 		Title title = new Title();
 		title.setId(cursor.getString(cursor.getColumnIndex(FIELD_ID)));
 		title.setName(cursor.getString(cursor.getColumnIndex(FIELD_NAME)));
+		title.setAuthor(cursor.getString(cursor.getColumnIndex(FIELD_AUTHOR)));
 		title.setLanguage(cursor.getString(cursor.getColumnIndex(FIELD_LANGUAGE)));
 		title.setSection(cursor.getInt(cursor.getColumnIndex(FIELD_SECTION)));
 		title.setSectionLoaded(cursor.getInt(cursor.getColumnIndex(FIELD_SECTION_LOADED)) > 0);

@@ -7,10 +7,15 @@
 		android:id="@+id/name"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:textSize="26dip" />
-       <TextView
-		android:id="@+id/filepath"
+		android:textSize="26dip" />	
+	<TextView
+		android:id="@+id/author"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:textSize="16dip" />
+	<TextView
+		android:id="@+id/filepath"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:textSize="12dip" />
 </LinearLayout>

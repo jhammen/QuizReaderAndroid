@@ -80,10 +80,12 @@ public class TitleListActivity extends ListActivity {
 		public View getView(int position, View convertView, ViewGroup parent) {
 			View row = getLayoutInflater().inflate(R.layout.title_list_row, parent, false);
 			TextView nameView = (TextView) row.findViewById(R.id.name);
+			TextView authorView = (TextView) row.findViewById(R.id.author);
 			TextView filePathView = (TextView) row.findViewById(R.id.filepath);
 			Title title = titles.get(position);
-			filePathView.setText(title.getFilepath());
 			nameView.setText(title.getName());
+			authorView.setText(title.getAuthor());
+			filePathView.setText(title.getFilepath());
 			return row;
 		}
 	}
