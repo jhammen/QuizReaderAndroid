@@ -25,8 +25,10 @@ import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 public class TitleListActivity extends ListActivity {
 
@@ -47,7 +49,7 @@ public class TitleListActivity extends ListActivity {
 		titles = titleDao.getAllTitles();
 		titleDao.close();
 
-		setListAdapter(new ArrayAdapter<Title>(this, R.layout.title_add_row, titles)); // fix this
+		setListAdapter(new TitleAdapter());
 	}
 
 	public void addTitle(View view) {
@@ -70,13 +72,20 @@ public class TitleListActivity extends ListActivity {
 		}
 	}
 
-	// class TitleAdapter extends ArrayAdapter<Title> {
-	// TitleAdapter() {
-	// super(TitleListActivity.this, android.R.layout.simple_list_item_1, titles);
-	// }
-	//
-	// public View getView(int position, View convertView, ViewGroup parent) {
-	//
-	// }
-	// }
+	class TitleAdapter extends ArrayAdapter<Title> {
+		TitleAdapter() {
+			super(TitleListActivity.this, R.layout.title_list_row, titles);
+		}
+
+		public View getView(int position, View convertView, ViewGroup parent) {
+			View row = getLayoutInflater().inflate(R.layout.title_list_row, parent, false);
+			TextView nameView = (TextView) row.findViewById(R.id.name);
+			TextView filePathView = (TextView) row.findViewById(R.id.filepath);
+			Title title = titles.get(position);
+			filePathView.setText(title.getFilepath());
+			nameView.setText(title.getName());
+			return row;
+		}
+	}
+
 }
