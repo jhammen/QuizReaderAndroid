@@ -29,6 +29,7 @@ import org.quizreader.android.database.WordDao;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -73,8 +74,9 @@ public class PageQuizActivity extends BaseQuizReadActivity {
 		quizWordDao.open();
 		quizWords = quizWordDao.getNewQuizWords(title.getId(), title.getSection(), title.getParagraph());
 		// do we have enough?
-		if (quizWords.size() < 10) {
-			int count = 10 - quizWords.size();
+		int minWords = 4;
+		if (quizWords.size() < minWords) {
+			int count = minWords - quizWords.size();
 			List<QuizWord> moreQuizWords = quizWordDao.getMoreQuizWords(title.getId(), title.getSection(), title.getParagraph(), count);
 			quizWords.addAll(moreQuizWords);
 		}
@@ -173,14 +175,18 @@ public class PageQuizActivity extends BaseQuizReadActivity {
 			wordDao.close();
 			quizWords.remove(testWord);
 			progressBar.incrementProgressBy(1);
+			new Handler().postDelayed(new Runnable() {
+				public void run() {
+					okButton.performClick();
+				}
+			}, 1000);
 		}
 		else {
 			RadioButton selectedButton = (RadioButton) findViewById(selectedId);
 			selectedButton.setBackgroundColor(Color.RED);
 			selectedButton.getBackground().setAlpha(90);
+			// enable button for next
 		}
-
-		// enable button for next
 		okButton.setEnabled(true);
 	}
 
