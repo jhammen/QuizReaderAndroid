@@ -54,7 +54,7 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 		try {
 			// if 1st paragraph of a new section then load words for that section
 			if (title.getParagraph() == 1 && !title.isSectionLoaded()) {
-				final QzzFile qzzFile = new QzzFile(title.getFilepath());
+				final QzzFile qzzFile = new QzzFile(title.getFilepath(), getCacheDir());
 				new LoadDefinitionsTask(this, title) {
 					@Override
 					protected void onPostExecute(Integer result) {

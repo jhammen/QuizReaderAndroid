@@ -55,14 +55,16 @@ public class TitleAddActivity extends ListActivity {
 		if (downloadDir != null) { // no media - error handling?
 
 			quizFiles = new ArrayList<File>();
-			for (File testFile : downloadDir.listFiles()) {
-				if (testFile.getName().endsWith(".qzz")) {
-					if (!openFiles.contains(testFile.getAbsolutePath())) {
-						quizFiles.add(testFile);
+			File[] listFiles = downloadDir.listFiles();
+			if (listFiles != null) {
+				for (File testFile : listFiles) {
+					if (testFile.getName().endsWith(".qzz")) {
+						if (!openFiles.contains(testFile.getAbsolutePath())) {
+							quizFiles.add(testFile);
+						}
 					}
 				}
 			}
-
 			ArrayAdapter<File> fileList = new ArrayAdapter<File>(this, R.layout.title_add_row, quizFiles);
 			setListAdapter(fileList);
 		}
@@ -73,7 +75,7 @@ public class TitleAddActivity extends ListActivity {
 
 		final File file = quizFiles.get(position);
 		try {
-			final QzzFile qzzFile = new QzzFile(file);
+			final QzzFile qzzFile = new QzzFile(file, getCacheDir());
 			LoadDefinitionsTask loadTitleDefsTask = new LoadDefinitionsTask(this, null) {
 
 				@Override

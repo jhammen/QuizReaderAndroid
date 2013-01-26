@@ -17,9 +17,11 @@
 package org.quizreader.android.qzz;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -32,7 +34,7 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-public class QzzFile extends ZipFile {
+public class QzzFile extends ZipFile implements TitleSource {
 
 	private static final String COMMON_XML = "common.xml";
 	private static final String META_XML = "meta.xml";
@@ -41,15 +43,18 @@ public class QzzFile extends ZipFile {
 	private List<ZipEntry> definitionEntries;
 	private List<ZipEntry> xhtmlEntries;
 	private Map<String, String> meta;
+	private File tempFolder;
 
-	public QzzFile(File file) throws IOException, XmlPullParserException {
+	public QzzFile(File file, File tempFolder) throws IOException, XmlPullParserException {
 		super(file);
+		this.tempFolder = tempFolder;
 		loadEntries();
 		loadMeta();
 	}
 
-	public QzzFile(String filepath) throws IOException, XmlPullParserException {
+	public QzzFile(String filepath, File tempFolder) throws IOException, XmlPullParserException {
 		super(filepath);
+		this.tempFolder = tempFolder;
 		loadEntries();
 		loadMeta();
 	}
@@ -72,8 +77,7 @@ public class QzzFile extends ZipFile {
 			String name = nextElement.getName();
 			if (name.endsWith(".xml") && !name.equals(COMMON_XML) && !name.equals(META_XML)) {
 				definitionEntries.add(nextElement);
-			}
-			else if (name.endsWith(".html")) {
+			} else if (name.endsWith(".html")) {
 				xhtmlEntries.add(nextElement);
 			}
 		}
@@ -116,29 +120,20 @@ public class QzzFile extends ZipFile {
 		return new InputStreamReader(getInputStream(entry), "UTF-8");
 	}
 
-	public String getHtml(int section, int paragraph) throws IOException {
+	@Override
+	public URL getHTML(int section) throws IOException {
+		File outputFile = File.createTempFile("qzz", "html", tempFolder);
+		FileWriter fw = new FileWriter(outputFile);
 		ZipEntry entry = xhtmlEntries.get(section);
 		InputStreamReader inputStream = new InputStreamReader(getInputStream(entry), "UTF-8");
-		int lastbyte = inputStream.read();
 		int nbyte = inputStream.read();
-		int paraCount = 0;
-		StringBuffer buff = new StringBuffer("<");
 		while (nbyte != -1) {
-			if (lastbyte == '<' && (nbyte == 'p' || nbyte == 'P')) {
-				paraCount++;
-				if (paraCount > paragraph) {
-					break;
-				}
-			}
-			if (paraCount == paragraph) {
-				buff.append((char) nbyte);
-			}
-			lastbyte = nbyte;
+			fw.append((char) nbyte);
 			nbyte = inputStream.read();
 		}
 		inputStream.close();
-		buff.deleteCharAt(buff.length() - 1);
-		return buff.toString().trim();
+		fw.close();
+		return outputFile.toURL();
 	}
 
 }

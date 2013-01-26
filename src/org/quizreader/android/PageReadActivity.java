@@ -16,6 +16,8 @@
  */
 package org.quizreader.android;
 
+import java.net.URL;
+
 import org.quizreader.android.qzz.QzzFile;
 
 import android.os.Bundle;
@@ -33,13 +35,16 @@ public class PageReadActivity extends BaseQuizReadActivity {
 		setContentView(R.layout.page_read);
 		WebView webview = (WebView) findViewById(R.id.webView);
 		try {
-			QzzFile qzzFile = new QzzFile(title.getFilepath());
-			String html = qzzFile.getHtml(title.getSection(), title.getParagraph());
-			if (html.length() == 0) { // end of the file
+			QzzFile qzzFile = new QzzFile(title.getFilepath(), getCacheDir());
+			URL htmlURL = qzzFile.getHTML(title.getSection());
+			if (htmlURL == null) { // end of the file
 				setResult(RESULT_END_SECTION);
 				finish();
 			}
-			webview.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
+			String externalForm = htmlURL.toExternalForm();
+			webview.loadUrl(externalForm);
+			// webview.loadDataWithBaseURL(null, html, "text/html", "utf-8",
+			// null);
 		} catch (Exception ex) {
 			webview.loadData(ex.getLocalizedMessage(), "text/plain", null);
 		}
