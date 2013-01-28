@@ -75,7 +75,7 @@ public class TitleAddActivity extends ListActivity {
 
 		final File file = quizFiles.get(position);
 		try {
-			final QzzFile qzzFile = new QzzFile(file, getCacheDir());
+			final QzzFile qzzFile = new QzzFile(file, this);
 			LoadDefinitionsTask loadTitleDefsTask = new LoadDefinitionsTask(this, null) {
 
 				@Override

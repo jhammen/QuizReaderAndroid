@@ -59,6 +59,27 @@ public class DefinitionDao extends BaseDao {
 		return quizWords;
 	}
 
+	public List<Definition> getDefinitions(String titleId, String word, String language) {
+		String query = "SELECT " + TABLE_DEFINITIONS + "." + FIELD_ID + ",";
+		query += FIELD_TEXT + "," + FIELD_TITLE_ID + ',' + FIELD_WORD_ID;
+		query += " FROM " + TABLE_DEFINITIONS + ", " + WordDao.TABLE_WORD;
+		query += " WHERE " + FIELD_WORD_ID + "= " + WordDao.TABLE_WORD + "." + WordDao.FIELD_ID;
+		query += " AND " + FIELD_TITLE_ID + "=? ";
+		query += " AND " + WordDao.TABLE_WORD + "." + WordDao.FIELD_TOKEN + "=?";
+		query += " AND " + WordDao.TABLE_WORD + "." + WordDao.FIELD_LANGUAGE + "=?";
+
+		Cursor cursor = database.rawQuery(query, new String[] { titleId, word, language });
+
+		cursor.moveToFirst();
+		List<Definition> quizWords = new ArrayList<Definition>();
+		while (cursor.isAfterLast() == false) {
+			quizWords.add(cursorToDefinition(cursor));
+			cursor.moveToNext();
+		}
+		cursor.close();
+		return quizWords;
+	}
+
 	private Definition cursorToDefinition(Cursor cursor) {
 		Definition def = new Definition();
 		def.setId(cursor.getString(cursor.getColumnIndex(FIELD_ID)));

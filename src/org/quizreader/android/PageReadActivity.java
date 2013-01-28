@@ -20,31 +20,40 @@ import java.net.URL;
 
 import org.quizreader.android.qzz.QzzFile;
 
+import android.annotation.SuppressLint;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 public class PageReadActivity extends BaseQuizReadActivity {
 
 	public static final int RESULT_END_SECTION = RESULT_FIRST_USER;
 
 	/** Called when the activity is first created. */
+	@SuppressLint("SetJavaScriptEnabled")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.page_read);
 		WebView webview = (WebView) findViewById(R.id.webView);
+		webview.setWebViewClient(new QRWebViewClient());
+		WebSettings webSettings = webview.getSettings();
+		webSettings.setJavaScriptEnabled(true);
+		webview.addJavascriptInterface(new QuizReaderInterface(this, title), "qr");
 		try {
-			QzzFile qzzFile = new QzzFile(title.getFilepath(), getCacheDir());
+			QzzFile qzzFile = new QzzFile(title.getFilepath(), this);
 			URL htmlURL = qzzFile.getHTML(title.getSection());
 			if (htmlURL == null) { // end of the file
 				setResult(RESULT_END_SECTION);
 				finish();
 			}
 			String externalForm = htmlURL.toExternalForm();
-			webview.loadUrl(externalForm);
-			// webview.loadDataWithBaseURL(null, html, "text/html", "utf-8",
-			// null);
+			// String externalForm =
+			// "file:/data/data/org.quizreader.android/cache/foo.html";
+			webview.loadUrl(externalForm + "?paragraph=" + title.getParagraph());
 		} catch (Exception ex) {
 			webview.loadData(ex.getLocalizedMessage(), "text/plain", null);
 		}
@@ -54,5 +63,16 @@ public class PageReadActivity extends BaseQuizReadActivity {
 		// show next word
 		setResult(RESULT_OK);
 		finish();
+	}
+
+	private class QRWebViewClient extends WebViewClient {
+		@Override
+		public boolean shouldOverrideUrlLoading(WebView view, String url) {
+			if (Uri.parse(url).getHost().equals("www.quizreader.org")) {
+				return false;
+			}
+			// do nothing
+			return true;
+		}
 	}
 }

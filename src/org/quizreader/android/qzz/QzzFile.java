@@ -17,12 +17,16 @@
 package org.quizreader.android.qzz;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +38,9 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
+import android.content.Context;
+import android.content.res.AssetManager;
+
 public class QzzFile extends ZipFile implements TitleSource {
 
 	private static final String COMMON_XML = "common.xml";
@@ -43,18 +50,18 @@ public class QzzFile extends ZipFile implements TitleSource {
 	private List<ZipEntry> definitionEntries;
 	private List<ZipEntry> xhtmlEntries;
 	private Map<String, String> meta;
-	private File tempFolder;
+	private Context context;
 
-	public QzzFile(File file, File tempFolder) throws IOException, XmlPullParserException {
+	public QzzFile(File file, Context context) throws IOException, XmlPullParserException {
 		super(file);
-		this.tempFolder = tempFolder;
+		this.context = context;
 		loadEntries();
 		loadMeta();
 	}
 
-	public QzzFile(String filepath, File tempFolder) throws IOException, XmlPullParserException {
+	public QzzFile(String filepath, Context context) throws IOException, XmlPullParserException {
 		super(filepath);
-		this.tempFolder = tempFolder;
+		this.context = context;
 		loadEntries();
 		loadMeta();
 	}
@@ -80,6 +87,15 @@ public class QzzFile extends ZipFile implements TitleSource {
 			} else if (name.endsWith(".html")) {
 				xhtmlEntries.add(nextElement);
 			}
+		}
+		Comparator<ZipEntry> byName = new ZipNameComparator();
+		Collections.sort(xhtmlEntries, byName);
+	}
+	
+	private class ZipNameComparator implements Comparator<ZipEntry> {
+		@Override
+		public int compare(ZipEntry arg0, ZipEntry arg1) {
+			return arg0.getName().compareTo(arg1.getName());
 		}
 	}
 
@@ -122,18 +138,36 @@ public class QzzFile extends ZipFile implements TitleSource {
 
 	@Override
 	public URL getHTML(int section) throws IOException {
-		File outputFile = File.createTempFile("qzz", "html", tempFolder);
-		FileWriter fw = new FileWriter(outputFile);
-		ZipEntry entry = xhtmlEntries.get(section);
-		InputStreamReader inputStream = new InputStreamReader(getInputStream(entry), "UTF-8");
-		int nbyte = inputStream.read();
-		while (nbyte != -1) {
-			fw.append((char) nbyte);
-			nbyte = inputStream.read();
+		upackScript("quizreader.js");
+		upackScript("jquery.min.js");
+		ZipEntry entry;
+		try {
+			entry = xhtmlEntries.get(section);
+		} catch (IndexOutOfBoundsException ex) {
+			return null;
 		}
-		inputStream.close();
-		fw.close();
+		File outputFile = File.createTempFile("qzz", ".html", context.getCacheDir());
+		copy(getInputStream(entry), new FileOutputStream(outputFile));
 		return outputFile.toURL();
 	}
+
+	private void upackScript(String scriptName) throws IOException {
+		File qzFile = new File(context.getCacheDir(), scriptName);
+		if (!qzFile.exists()) {
+			AssetManager assetManager = context.getAssets();
+			copy(assetManager.open(scriptName), new FileOutputStream(qzFile));
+		}
+	}
+
+	private void copy(InputStream is, OutputStream os) throws IOException {
+		byte buf[] = new byte[2048];
+		int len;
+		while ((len = is.read(buf)) != -1) {
+			os.write(buf, 0, len);
+		}
+		os.close();
+		is.close();
+	}
+
 
 }
