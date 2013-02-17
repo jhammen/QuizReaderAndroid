@@ -186,8 +186,8 @@ public class PageQuizActivity extends BaseQuizReadActivity {
 			selectedButton.setBackgroundColor(Color.RED);
 			selectedButton.getBackground().setAlpha(90);
 			// enable button for next
+			okButton.setEnabled(true);
 		}
-		okButton.setEnabled(true);
 	}
 
 	public void kontinue(View view) {
