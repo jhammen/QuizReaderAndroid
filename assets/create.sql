@@ -24,9 +24,11 @@ create table title (
 create table definition (
 	_id			integer primary key autoincrement,
  	word_id		integer,
+ 	root_id		integer,
  	title_id	integer,
  	text		varchar(128),
  	foreign key(word_id) REFERENCES word(_id),
+ 	foreign key(root_id) REFERENCES word(_id),
  	foreign key(title_id) REFERENCES title(_id) ON DELETE CASCADE
 );
 

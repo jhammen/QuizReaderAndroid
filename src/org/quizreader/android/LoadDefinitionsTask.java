@@ -32,6 +32,7 @@ import android.os.AsyncTask;
 
 public class LoadDefinitionsTask extends AsyncTask<Reader, String, Integer> {
 
+	private static final String ATTRIBUTE_ROOTS = "root";
 	private static final String ATTRIBUTE_TITLE = "title";
 	private static final String TAG_DEF = "def";
 	private static final String TAG_DEFINITIONS = "definitions";
@@ -98,12 +99,18 @@ public class LoadDefinitionsTask extends AsyncTask<Reader, String, Integer> {
 						wordId = WordDao.insertOrGetWordId(db, title.getLanguage(), word, 0);
 					}
 					else if (TAG_DEF.equals(name)) {
+						String roots = xpp.getAttributeValue(null, ATTRIBUTE_ROOTS);
 						xpp.next();
 						String text = xpp.getText();
 						if (text == null) {
 							text = "";
 						}
-						DefinitionDao.insertDefinition(db, text, title.getId(), wordId);
+						Long rootId = null;
+						if (roots != null && roots.length() > 0) {
+							String root = roots.split(",")[0]; // take only the first root if multiple
+							rootId = WordDao.insertOrGetWordId(db, title.getLanguage(), root, 0);
+						}
+						DefinitionDao.insertDefinition(db, text, title.getId(), wordId, rootId);
 					}
 				}
 				else if (eventType == XmlPullParser.END_TAG) {

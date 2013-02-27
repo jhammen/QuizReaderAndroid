@@ -28,6 +28,7 @@ public class DefinitionDao extends BaseDao {
 
 	private static final String TABLE_DEFINITIONS = "definition";
 	private static final String FIELD_ID = "_id";
+	private static final String FIELD_ROOT_ID = "root_id";
 	private static final String FIELD_TEXT = "text";
 	private static final String FIELD_TITLE_ID = "title_id";
 	private static final String FIELD_WORD_ID = "word_id";
@@ -36,7 +37,7 @@ public class DefinitionDao extends BaseDao {
 		super(context);
 	}
 
-	public static long insertDefinition(SQLiteDatabase db, String def, String titleId, long wordId) {
+	public static long insertDefinition(SQLiteDatabase db, String def, String titleId, long wordId, Long rootId) {
 		ContentValues cv = new ContentValues();
 		if (def.length() > 128) {
 			def = def.substring(0, 125) + "...";
@@ -44,6 +45,7 @@ public class DefinitionDao extends BaseDao {
 		cv.put(FIELD_TEXT, def);
 		cv.put(FIELD_TITLE_ID, titleId);
 		cv.put(FIELD_WORD_ID, wordId);
+		cv.put(FIELD_ROOT_ID, rootId);
 		return db.insert(TABLE_DEFINITIONS, null, cv);
 	}
 
