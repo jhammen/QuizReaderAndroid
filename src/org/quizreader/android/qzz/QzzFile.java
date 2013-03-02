@@ -84,14 +84,15 @@ public class QzzFile extends ZipFile implements TitleSource {
 			String name = nextElement.getName();
 			if (name.endsWith(".xml") && !name.equals(COMMON_XML) && !name.equals(META_XML)) {
 				definitionEntries.add(nextElement);
-			} else if (name.endsWith(".html")) {
+			}
+			else if (name.endsWith(".html")) {
 				xhtmlEntries.add(nextElement);
 			}
 		}
 		Comparator<ZipEntry> byName = new ZipNameComparator();
 		Collections.sort(xhtmlEntries, byName);
 	}
-	
+
 	private class ZipNameComparator implements Comparator<ZipEntry> {
 		@Override
 		public int compare(ZipEntry arg0, ZipEntry arg1) {
@@ -137,25 +138,39 @@ public class QzzFile extends ZipFile implements TitleSource {
 	}
 
 	@Override
-	public URL getHTML(int section) throws IOException {
-		upackScript("quizreader.js");
-		upackScript("jquery.min.js");
+	public URL getHTML(String titleId, int section) throws IOException {
+		unpackResource("qr.js");
+		unpackResource("qr.css");
+		unpackFolder("images");
 		ZipEntry entry;
 		try {
 			entry = xhtmlEntries.get(section);
 		} catch (IndexOutOfBoundsException ex) {
 			return null;
 		}
-		File outputFile = File.createTempFile("qzz", ".html", context.getCacheDir());
-		copy(getInputStream(entry), new FileOutputStream(outputFile));
+		File outputFile = new File(context.getCacheDir(), titleId + "-" + entry.getName());
+		if (!outputFile.exists()) {
+			copy(getInputStream(entry), new FileOutputStream(outputFile));
+		}
 		return outputFile.toURL();
 	}
 
-	private void upackScript(String scriptName) throws IOException {
-		File qzFile = new File(context.getCacheDir(), scriptName);
-		if (!qzFile.exists()) {
+	private void unpackFolder(String folderPath) throws IOException {
+		File testFolder = new File(context.getCacheDir(), folderPath);
+		if (!testFolder.exists()) {
+			testFolder.mkdir();
+		}
+		AssetManager assetManager = context.getAssets();
+		for (String fileName : assetManager.list(folderPath)) {
+			unpackResource(folderPath + "/" + fileName);
+		}
+	}
+
+	private void unpackResource(String fileName) throws IOException {
+		File cacheFile = new File(context.getCacheDir(), fileName);
+		if (!cacheFile.exists()) {
 			AssetManager assetManager = context.getAssets();
-			copy(assetManager.open(scriptName), new FileOutputStream(qzFile));
+			copy(assetManager.open(fileName), new FileOutputStream(cacheFile));
 		}
 	}
 
@@ -168,6 +183,5 @@ public class QzzFile extends ZipFile implements TitleSource {
 		os.close();
 		is.close();
 	}
-
 
 }

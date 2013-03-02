@@ -5,6 +5,6 @@ import java.net.URL;
 
 public interface TitleSource {
 	
-	public URL getHTML(int section) throws IOException;
+	public URL getHTML(String titleId, int section) throws IOException;
 
 }
