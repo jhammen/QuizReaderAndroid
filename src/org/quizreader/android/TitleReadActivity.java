@@ -17,8 +17,6 @@
 
 package org.quizreader.android;
 
-import java.io.IOException;
-
 import org.quizreader.android.database.TitleDao;
 import org.quizreader.android.qzz.QzzFile;
 
@@ -28,10 +26,6 @@ import android.view.View;
 import android.widget.TextView;
 
 public class TitleReadActivity extends BaseQuizReadActivity {
-
-	private static final int REQUEST_TEACH = 0;
-	private static final int REQUEST_QUIZ = 1;
-	private static final int REQUEST_READ = 2;
 
 	private TextView bigText;
 	private TitleDao titleDao;
@@ -59,60 +53,38 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 					@Override
 					protected void onPostExecute(Integer result) {
 						super.onPostExecute(result);
-						try {
-							new LoadQuizWordsTask(TitleReadActivity.this, title) {
-								@Override
-								protected void onPostExecute(Integer result) {
-									super.onPostExecute(result);
-									title.setSectionLoaded(true);
-									titleDao.open();
-									titleDao.updateTitle(title);
-									titleDao.close();
-									teachWords();
-								}
-							}.execute(qzzFile.getHTMLReader(title.getSection()));
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
+						title.setSectionLoaded(true);
+						titleDao.open();
+						titleDao.updateTitle(title);
+						titleDao.close();
+						readTitle();
 					}
 				}.execute(qzzFile.getDefinitionReader(title.getSection()));
 			}
 			else {
-				teachWords();
+				readTitle();
 			}
 		} catch (Exception e) {
 			bigText.setText(e.getLocalizedMessage());
 		}
 	}
 
-	private void teachWords() {
-		Intent wordLearnIntent = new Intent(this, PageLearnActivity.class);
-		wordLearnIntent.putExtra("titleId", title.getId());
-		startActivityForResult(wordLearnIntent, REQUEST_TEACH);
+	private void readTitle() {
+		Intent readIntent = new Intent(this, PageReadActivity.class);
+		readIntent.putExtra("titleId", title.getId());
+		startActivity(readIntent);
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
+		System.out.println("result was: " + resultCode);
 		if (resultCode == RESULT_OK) {
-			if (requestCode == REQUEST_TEACH) {
-				Intent wordQuizIntent = new Intent(this, PageQuizActivity.class);
-				wordQuizIntent.putExtra("titleId", title.getId());
-				startActivityForResult(wordQuizIntent, REQUEST_QUIZ);
-			}
-			else if (requestCode == REQUEST_QUIZ) {
-				Intent readIntent = new Intent(this, PageReadActivity.class);
-				readIntent.putExtra("titleId", title.getId());
-				startActivityForResult(readIntent, REQUEST_READ);
-			}
-			else if (requestCode == REQUEST_READ) {
-				// update paragraph
-				updateTitle(title.getSection(), title.getParagraph() + 1);
-				updateTitleView();
-				backupProgress(); // too often?
-			}
+			updateTitle(title.getSection(), title.getParagraph() + 1);
+			updateTitleView();
+			backupProgress(); // too often?
 		}
-		else if (requestCode == REQUEST_READ && resultCode == PageReadActivity.RESULT_END_SECTION) { //
+		else if (resultCode == PageReadActivity.RESULT_END_TITLE) { //
 			// TODO: what if we hit the end of the last section?
 			updateTitle(title.getSection() + 1, 1);
 			updateTitleView();
@@ -124,7 +96,7 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 			@Override
 			protected void onPostExecute(Integer result) {
 				super.onPostExecute(result);
-				teachWords();
+				readTitle();
 			}
 		};
 		task.execute((Void) null);

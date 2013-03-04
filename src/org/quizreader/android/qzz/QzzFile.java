@@ -141,7 +141,7 @@ public class QzzFile extends ZipFile implements TitleSource {
 	public URL getHTML(String titleId, int section) throws IOException {
 		unpackResource("qr.js");
 		unpackResource("qr.css");
-		unpackFolder("images");
+		unpackFolder("templates");
 		ZipEntry entry;
 		try {
 			entry = xhtmlEntries.get(section);

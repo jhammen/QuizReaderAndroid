@@ -15,18 +15,13 @@
             android:name="TitleListActivity"
             android:label="@string/app_name" >
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />s
-
+                <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity android:name="TitleAddActivity" >
         </activity>
-        <activity android:name="TitleReadActivity" >
-        </activity>
-        <activity android:name=".PageLearnActivity" >
-        </activity>
-        <activity android:name=".PageQuizActivity" >
+        <activity android:name="org.quizreader.android.TitleReadActivity" >
         </activity>
         <activity android:name=".PageReadActivity" >
         </activity>
