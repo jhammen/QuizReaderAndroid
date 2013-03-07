@@ -21,6 +21,7 @@ public class Definition {
 	private String id;
 	private String wordId;
 	private String titleId;
+	private String rootId;
 	private String text;
 
 	public String getId() {
@@ -53,6 +54,14 @@ public class Definition {
 
 	public void setText(String text) {
 		this.text = text;
+	}
+
+	public String getRootId() {
+		return rootId;
+	}
+
+	public void setRootId(String rootId) {
+		this.rootId = rootId;
 	}
 
 }

@@ -25,70 +25,77 @@ $(document).ready(function() {
 		qr.showDef($(this).text());
 	});
 
-	// create dialog div
+	// create div to show definitions/quizzes
 	var quizDiv = $("<div/>").appendTo("body");
 
 	// parse paragraph from url
 	var paragraph = /[?&]paragraph=([^&]*)/.exec(window.location.search)[1];
-	
-	function currentParagraph() {
-		return $("p:nth-of-type(" + paragraph + ")");
-	}
 
 	// add text "more" button + handler
 	var moreButton = $("<button>More...</button>").appendTo("#content").show();
 	moreButton.click(function() {
 		paragraph++;
-		if (currentParagraph().length > 0) {
-			showWords();
+		// show definitions if paragraph exists
+		if ($("p:nth-of-type(" + paragraph + ")").length > 0) {
+			showDefinitions();
 		} else {
 			qr.finish();
 		}
 	});
 
-	var wordMap = {};
+	// --- show definitions
 
-	showWords();
-
-	function showWords() {
-		$("#content").hide();
-		quizDiv.load("templates/showlist.html", function() {
-			// find quizwords
-			wordMap = {};
-			$("p:nth-of-type(" + paragraph + ") a").each(function(index) {
-				var word = $(this).text();
-				if (!wordMap[word]) {
-					wordMap[word] = qr.getQuizLevel(word);
-				}
-			});
-			for ( var key in wordMap) {
-				if (wordMap[key] < 3) {
-					$("<li>" + key + "</li>").appendTo("#wordList");
-				}
-			}
-			$("#listOKButton").click(function() {
-				showDefinitions();
-			});
-			quizDiv.show();
-		});
-	}
+	showDefinitions();
 
 	function showDefinitions() {
-		var words = Object.keys(wordMap);
-		words.sort();
+		moreButton.hide();
+
+		// grab all words for the current paragraph
+		var wordMap = {};
+		$("p:nth-of-type(" + paragraph + ") a").each(function(index) {
+			wordMap[$(this).text()] = 1;
+		});
+		var wordList = Object.keys(wordMap);
+
+		var entries = [];
+
+		// load and show definition template
 		quizDiv.load("templates/showdef.html", function() {
+			quizDiv.show();
+			// show first definition
+			showNextDefinition();
+			// show next definition on button click
 			$("#nextDef").click(function() {
-				var word = words.pop();
-				if (word) {
-					$("#word").text(word);
-					$("#def").text(qr.getEntry(word));
-				}
-				// else {
-				showQuiz();
-				// }
+				showNextDefinition();
 			});
 		});
+
+		function showNextDefinition() {
+			while (entries.length == 0) {
+				var word = wordList.pop();
+				if (!word) { // done
+					showQuiz();
+					return;
+				}
+				var arr = JSON.parse(qr.getEntry(word));
+				for ( var i = 0; i < arr.length; i++) {
+					if (arr[i].level == 0) {
+						entries.push(arr[i]);
+					}
+				}
+			}
+			var ent = entries.pop();
+			$("#word").text(ent.word);
+			$("#defList").empty();
+			for ( var i = 0; i < ent.defs.length; i++) {
+				var def = ent.defs[i];
+				$("<li>" + def.text + "</li>").appendTo("#defList");
+			}
+			qr.updateQuizLevel(ent.word, 1);
+		}
 	}
+
+	// --- quiz
 
 	function showQuiz() {
 		quizDiv.load("templates/quizform.html", function() {
@@ -98,20 +105,21 @@ $(document).ready(function() {
 			});
 		});
 	}
-	
+
 	function showText() {
-		// unhide up to the correct paragraph
+		// unhide up to the current paragraph
 		var counter = 0;
 		$("#content > *").each(function(index) {
 			$(this).show();
-			if($(this).is('p')) {
-				if(++counter == paragraph) {
+			if ($(this).is('p')) {
+				if (++counter == paragraph) {
 					return false;
 				}
 			}
 		});
 		quizDiv.hide();
-		$("#content").show();
+		qr.updateParagraph(paragraph);
+		moreButton.show();
 	}
 
 });

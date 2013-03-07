@@ -16,12 +16,15 @@
  */
 package org.quizreader.android.database;
 
+import java.util.List;
+
 public class Word {
 
 	private String id;
 	private String language;
 	private String token;
 	private int quizLevel;
+	private List<Definition> definitions;
 
 	public String getId() {
 		return id;
@@ -53,5 +56,13 @@ public class Word {
 
 	public void setQuizLevel(int quizLevel) {
 		this.quizLevel = quizLevel;
+	}
+
+	public List<Definition> getDefinitions() {
+		return definitions;
+	}
+
+	public void setDefinitions(List<Definition> definitions) {
+		this.definitions = definitions;
 	}
 }

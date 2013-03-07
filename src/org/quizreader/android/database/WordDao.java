@@ -17,7 +17,9 @@
 package org.quizreader.android.database;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -32,8 +34,26 @@ public class WordDao extends BaseDao {
 	static final String FIELD_TOKEN = "token";
 	static final String FIELD_QUIZ_LEVEL = "quiz_level";
 
+	private DefinitionDao defDao;
+
 	public WordDao(Context context) {
 		super(context);
+		defDao = new DefinitionDao(context);
+	}
+
+	public void open() {
+		super.open();
+		defDao.open(getDatabase());
+	}
+
+	public void open(SQLiteDatabase database) {
+		super.open(database);
+		defDao.open(database);
+	}
+
+	public void close() {
+		super.close();
+		defDao.close();
 	}
 
 	public static long insertOrGetWordId(SQLiteDatabase db, String language, String word, int quizLevel) {
@@ -56,6 +76,19 @@ public class WordDao extends BaseDao {
 		return wordId;
 	}
 
+	public Word getWord(String id) {
+		String query = FIELD_ID + " = ?";
+		Cursor cursor = database.query(TABLE_WORD, null, query, new String[] { id }, null, null, null);
+		cursor.moveToFirst();
+		if (cursor.isAfterLast()) {
+			cursor.close();
+			return null;
+		}
+		Word ret = cursorToWord(cursor);
+		cursor.close();
+		return ret;
+	}
+
 	public Word getWord(String word, String language) {
 		String query = FIELD_TOKEN + " = ? AND " + FIELD_LANGUAGE + " = ?";
 		Cursor cursor = database.query(TABLE_WORD, null, query, new String[] { word, language }, null, null, null);
@@ -69,18 +102,35 @@ public class WordDao extends BaseDao {
 		return ret;
 	}
 
+	public List<Word> getWordAndRoots(String token, String language) {
+		List<Word> ret = new ArrayList<Word>();
+		Word word = getWord(token, language);
+		ret.add(word);
+		Set<String> rootIds = new HashSet<String>();
+		for (Definition def : word.getDefinitions()) {
+			if (def.getRootId() != null) {
+				rootIds.add(def.getRootId());
+			}
+		}
+		for (String rootId : rootIds) {
+			ret.add(getWord(rootId));
+		}
+		return ret;
+	}
+
+
 	public long insert(Word word) {
 		return insertOrGetWordId(database, word.getLanguage(), word.getToken(), word.getQuizLevel());
 	}
 
 	public void update(Word word) {
 		ContentValues cv = new ContentValues();
-		// cv.put(FIELD_LANGUAGE, word.getLanguage());
-		// cv.put(FIELD_TOKEN, word.getToken());
+		// do not update language or token
 		cv.put(FIELD_QUIZ_LEVEL, word.getQuizLevel());
 		database.update(TABLE_WORD, cv, FIELD_ID + " =  ?", new String[] { word.getId() });
 	}
 
+	// used by BackupWordsTask
 	public List<Word> getLearnedWords() {
 		String query = FIELD_QUIZ_LEVEL + " > 0";
 		Cursor cursor = database.query(TABLE_WORD, null, query, null, null, null, null);
@@ -100,6 +150,9 @@ public class WordDao extends BaseDao {
 		word.setLanguage(cursor.getString(cursor.getColumnIndex(FIELD_LANGUAGE)));
 		word.setToken(cursor.getString(cursor.getColumnIndex(FIELD_TOKEN)));
 		word.setQuizLevel(cursor.getInt(cursor.getColumnIndex(FIELD_QUIZ_LEVEL)));
+
+		word.setDefinitions(defDao.getDefinitions(word.getId()));
+
 		return word;
 	}
 

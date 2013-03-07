@@ -19,10 +19,13 @@ package org.quizreader.android;
 import java.net.URL;
 import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.quizreader.android.database.Definition;
 import org.quizreader.android.database.DefinitionDao;
+import org.quizreader.android.database.Word;
+import org.quizreader.android.database.WordDao;
 import org.quizreader.android.qzz.QzzFile;
 
 import android.annotation.SuppressLint;
@@ -39,6 +42,8 @@ import android.widget.Toast;
 public class PageReadActivity extends BaseQuizReadActivity {
 
 	public static final int RESULT_END_TITLE = RESULT_FIRST_USER;
+
+	private WordDao wordDao;
 
 	/** Called when the activity is first created. */
 	@SuppressLint("SetJavaScriptEnabled")
@@ -58,6 +63,7 @@ public class PageReadActivity extends BaseQuizReadActivity {
 		webSettings.setJavaScriptEnabled(true);
 		webview.addJavascriptInterface(new QuizReaderInterface(), "qr");
 		try {
+			wordDao = new WordDao(this);
 			QzzFile qzzFile = new QzzFile(title.getFilepath(), this);
 			URL htmlURL = qzzFile.getHTML(title.getId(), title.getSection());
 			if (htmlURL == null) { // beyond the last section
@@ -75,30 +81,49 @@ public class PageReadActivity extends BaseQuizReadActivity {
 		DefinitionDao defDao = new DefinitionDao(PageReadActivity.this);
 
 		// @JavascriptInterface
-		public void showDef(String word) {
-			defDao.open();
-			List<Definition> definitions = defDao.getDefinitions(title.getId(), word, title.getLanguage());
-			defDao.close();
-			for (Definition def : definitions) {
+		public void showDef(String token) {
+			wordDao.open();
+			Word word = wordDao.getWord(token, title.getLanguage());
+			wordDao.close();
+			for (Definition def : word.getDefinitions()) {
 				Toast.makeText(PageReadActivity.this, def.getText(), Toast.LENGTH_SHORT).show();
 			}
+			// drop quiz level!
 		}
 
 		public int getQuizLevel(String word) {
 			return (int) Math.floor(Math.random() * 12);
 		}
 
-		public String getEntry(String word) throws JSONException {
-			defDao.open();
-			List<Definition> definitions = defDao.getDefinitions(title.getId(), word, title.getLanguage());
-			defDao.close();
-			if (definitions.size() == 0) {
-				return null;
+		public String getEntry(String token) throws JSONException {
+			wordDao.open();
+			List<Word> words = wordDao.getWordAndRoots(token, title.getLanguage());
+			wordDao.close();
+			JSONArray ret = new JSONArray();
+			for (Word word : words) {
+				JSONObject json = new JSONObject();
+				json.put("word", word.getToken());
+				json.put("level", word.getQuizLevel());
+				// add definitions
+				JSONArray jsonArray = new JSONArray();
+				for (Definition def : word.getDefinitions()) {
+					JSONObject defObj = new JSONObject();
+					// defObj.put("type", definition.get);
+					defObj.put("text", def.getText());
+					jsonArray.put(defObj);
+				}
+				json.put("defs", jsonArray);
+				ret.put(json);
 			}
-			Definition definition = definitions.get(0);
-			JSONObject json = new JSONObject();
-			json.put("def", definition.getText());
-			return json.toString();
+			return ret.toString();
+		}
+
+		public void updateQuizLevel(String token, int delta) {
+			// increment from the current level
+		}
+
+		public void updateParagraph(int number) {
+			// TODO: increment paragraph and save in db
 		}
 
 		public void finish() {

@@ -63,7 +63,7 @@ public class DefinitionDao extends BaseDao {
 
 	public List<Definition> getDefinitions(String titleId, String word, String language) {
 		String query = "SELECT " + TABLE_DEFINITIONS + "." + FIELD_ID + ",";
-		query += FIELD_TEXT + "," + FIELD_TITLE_ID + ',' + FIELD_WORD_ID;
+		query += FIELD_TEXT + "," + FIELD_TITLE_ID + ',' + FIELD_WORD_ID + "," + FIELD_ROOT_ID;
 		query += " FROM " + TABLE_DEFINITIONS + ", " + WordDao.TABLE_WORD;
 		query += " WHERE " + FIELD_WORD_ID + "= " + WordDao.TABLE_WORD + "." + WordDao.FIELD_ID;
 		query += " AND " + FIELD_TITLE_ID + "=? ";
@@ -87,6 +87,7 @@ public class DefinitionDao extends BaseDao {
 		def.setId(cursor.getString(cursor.getColumnIndex(FIELD_ID)));
 		def.setTitleId(cursor.getString(cursor.getColumnIndex(FIELD_TITLE_ID)));
 		def.setWordId(cursor.getString(cursor.getColumnIndex(FIELD_WORD_ID)));
+		def.setRootId(cursor.getString(cursor.getColumnIndex(FIELD_ROOT_ID)));
 		def.setText(cursor.getString(cursor.getColumnIndex(FIELD_TEXT)));
 		return def;
 	}

@@ -1,6 +1,6 @@
 
 .no-close .ui-dialog-titlebar-close { display: none; }
 
-#content { display: none; }
-
 #content > * { display: none; }
+
+#word { font-weight: bold; }
