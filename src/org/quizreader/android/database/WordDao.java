@@ -56,6 +56,10 @@ public class WordDao extends BaseDao {
 		defDao.close();
 	}
 
+	public long insert(Word word) {
+		return insertOrGetWordId(database, word.getLanguage(), word.getToken(), word.getQuizLevel());
+	}
+
 	public static long insertOrGetWordId(SQLiteDatabase db, String language, String word, int quizLevel) {
 		long wordId;
 		String query = FIELD_TOKEN + " = ? AND " + FIELD_LANGUAGE + " = ?";
@@ -102,6 +106,13 @@ public class WordDao extends BaseDao {
 		return ret;
 	}
 
+	private String queryString() {
+		String query = "SELECT " + FIELD_ID + "," + FIELD_LANGUAGE + ",";
+		query += FIELD_TOKEN + "," + FIELD_QUIZ_LEVEL + " FROM " + TABLE_WORD;
+		query += " WHERE " + FIELD_LANGUAGE + "=? AND " + FIELD_TOKEN + "!=?";
+		return query;
+	}
+
 	public List<Word> getWordAndRoots(String token, String language) {
 		List<Word> ret = new ArrayList<Word>();
 		Word word = getWord(token, language);
@@ -118,16 +129,30 @@ public class WordDao extends BaseDao {
 		return ret;
 	}
 
-
-	public long insert(Word word) {
-		return insertOrGetWordId(database, word.getLanguage(), word.getToken(), word.getQuizLevel());
+	public Word getRandomQuizWord(String language, String token, String token2) {
+		String query = queryString();
+		query += " AND " + FIELD_TOKEN + "!=?";
+		query += " ORDER BY RANDOM() LIMIT 1";
+		Cursor cursor = database.rawQuery(query, new String[] { language, token, token2 });
+		cursor.moveToFirst();
+		Word quizWord = cursorToWord(cursor);
+		cursor.close();
+		return quizWord;
 	}
 
-	public void update(Word word) {
-		ContentValues cv = new ContentValues();
-		// do not update language or token
-		cv.put(FIELD_QUIZ_LEVEL, word.getQuizLevel());
-		database.update(TABLE_WORD, cv, FIELD_ID + " =  ?", new String[] { word.getId() });
+	public Word getQuizWordLike(String language, String token, String like) {
+		String query = queryString();
+		query += " AND " + WordDao.FIELD_TOKEN + " LIKE '" + like + "'";
+		query += " ORDER BY RANDOM() LIMIT 1";
+		Cursor cursor = database.rawQuery(query, new String[] { language, token });
+		cursor.moveToFirst();
+		if (cursor.isAfterLast()) {
+			cursor.close();
+			return null;
+		}
+		Word quizWord = cursorToWord(cursor);
+		cursor.close();
+		return quizWord;
 	}
 
 	// used by BackupWordsTask
@@ -154,6 +179,12 @@ public class WordDao extends BaseDao {
 		word.setDefinitions(defDao.getDefinitions(word.getId()));
 
 		return word;
+	}
+
+	public void updateLevel(String token, int level) {
+		ContentValues cv = new ContentValues();
+		cv.put(FIELD_QUIZ_LEVEL, level);
+		database.update(TABLE_WORD, cv, FIELD_TOKEN + " =  ?", new String[] { token });
 	}
 
 }
