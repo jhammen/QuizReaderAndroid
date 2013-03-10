@@ -6,7 +6,6 @@ create table title (
 	author		varchar(128) unique,
 	filepath	varchar(512) unique,
 	section				integer,
-	section_loaded		integer,
 	total_sections		integer,
 	paragraph			integer
 );

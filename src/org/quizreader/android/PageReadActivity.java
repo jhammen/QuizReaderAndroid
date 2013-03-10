@@ -165,8 +165,9 @@ public class PageReadActivity extends BaseQuizReadActivity {
 		}
 
 		// @JavascriptInterface
-		public void updateParagraph(int number) {
-			updateTitle(title.getSection(), number);
+		public void updateParagraph(int index) {
+			title.setParagraph(index);
+			updateTitle();
 		}
 
 		// @JavascriptInterface
@@ -176,7 +177,9 @@ public class PageReadActivity extends BaseQuizReadActivity {
 				setResult(RESULT_END_TITLE);
 			}
 			else {
-				updateTitle(title.getSection() + 1, 1);
+				title.setSection(title.getSection() + 1);
+				title.setParagraph(0);
+				updateTitle();
 			}
 			PageReadActivity.this.finish();
 		}

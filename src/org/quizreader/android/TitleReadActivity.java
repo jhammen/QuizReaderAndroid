@@ -42,17 +42,15 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 
 	public void quizRead(View view) {
 		try {
-			// if 1st paragraph of a new section then load words for that section
-			if (title.getParagraph() == 1 && !title.isSectionLoaded()) {
+			// if before 1st paragraph of a new section then load words for that section
+			if (title.getParagraph() == 0) {
 				final QzzFile qzzFile = new QzzFile(title.getFilepath(), this);
 				new LoadDefinitionsTask(this, title) {
 					@Override
 					protected void onPostExecute(Integer result) {
 						super.onPostExecute(result);
-						title.setSectionLoaded(true);
-						titleDao.open();
-						titleDao.updateTitle(title);
-						titleDao.close();
+						title.setParagraph(1); // ready to quizread first paragraph
+						updateTitle();
 						readTitle();
 					}
 				}.execute(qzzFile.getDefinitionReader(title.getSection()));
@@ -74,7 +72,6 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		System.out.println("result was: " + resultCode);
 		if (resultCode == RESULT_OK) {
 			updateTitleView();
 			backupProgress(); // too often?

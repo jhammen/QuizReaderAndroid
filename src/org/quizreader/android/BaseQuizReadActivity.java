@@ -38,9 +38,7 @@ public class BaseQuizReadActivity extends Activity {
 		titleDao.close();
 	}
 
-	protected void updateTitle(int section, int paragraph) {
-		title.setSection(section);
-		title.setParagraph(paragraph);
+	protected void updateTitle() {
 		titleDao.open();
 		titleDao.updateTitle(title);
 		titleDao.close();
