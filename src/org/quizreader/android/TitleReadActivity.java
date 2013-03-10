@@ -86,7 +86,8 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 	}
 
 	private void updateTitleView() {
-		bigText.setText("chapter: " + title.getSection() + ", paragraph: " + title.getParagraph());
+		int chapter = title.getSection() + 1; // sections are zero-based
+		bigText.setText("chapter: " + chapter + ", paragraph: " + title.getParagraph());
 	}
 
 	private void backupProgress() {

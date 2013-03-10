@@ -23,7 +23,7 @@ public class Title {
 	private String name;
 	private String author;
 	private String filepath;
-	private int section = 1;
+	private int section = 0;
 	private boolean sectionLoaded = false;
 	private int totalSections;
 	private int paragraph = 1;
