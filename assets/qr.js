@@ -20,17 +20,23 @@ return(!i||i!==r&&!b.contains(r,i))&&(e.type=o.origType,n=o.handler.apply(this,a
  */
 $(document).ready(function() {
 
-	var DONT_QUIZ_ABOVE = 2;
+	var DONT_QUIZ_ABOVE = 5;
+	var MIN_QUIZ_ENTRIES = 3;
+
+	// create divs to show definitions/quizzes
+	var defDiv = $("<div/>").appendTo("body");
+	var quizDiv = $("<div/>").appendTo("body");
 
 	// set up clickable words
 	$("a").click(function() {
-		var word = $(this).text();
-		qr.showDef(word);
-		updateLevel(word, -1);
+		if (quizDiv.is(':hidden')) {
+			var word = $(this).text();
+			showSingleDefinition(word);
+			updateLevel(word, -1);
+		} else {
+			alert("cannot show definitions while in quiz mode");
+		}
 	});
-
-	// create div to show definitions/quizzes
-	var quizDiv = $("<div/>").appendTo("body");
 
 	// parse paragraph from url and unhide up to that point
 	var paragraph = parseInt(/[?&]paragraph=([^&]*)/.exec(window.location.search)[1]);
@@ -75,6 +81,15 @@ $(document).ready(function() {
 
 	showDefinitions();
 
+	function showDef(ent) {
+		$("#word").text(ent.word);
+		$("#defList").empty();
+		for ( var i = 0; i < ent.defs.length; i++) {
+			var def = ent.defs[i];
+			$("<li>" + def.text + "</li>").appendTo("#defList");
+		}
+	}
+
 	function showDefinitions() {
 		moreButton.hide();
 
@@ -92,10 +107,11 @@ $(document).ready(function() {
 		quizDiv.load("templates/showdef.html", function() {
 			quizDiv.show();
 			// show first definition
-			showNextDefinition();
+			var defWord = showNextDefinition();
 			// show next definition on button click
 			$("#nextDef").click(function() {
-				showNextDefinition();
+				updateLevel(defWord, 1);
+				defWord = showNextDefinition();
 			});
 		});
 
@@ -120,14 +136,23 @@ $(document).ready(function() {
 				}
 			}
 			var ent = defEntries.pop();
-			$("#word").text(ent.word);
-			$("#defList").empty();
-			for ( var i = 0; i < ent.defs.length; i++) {
-				var def = ent.defs[i];
-				$("<li>" + def.text + "</li>").appendTo("#defList");
-			}
-			updateLevel(ent.word, 1);
+			showDef(ent);
+			return ent.word;
 		}
+	}
+
+	function showSingleDefinition(word) {
+		moreButton.hide();
+		// get entries
+		var arr = JSON.parse(qr.getEntries(word));
+		defDiv.load("templates/showdef.html", function() {
+			showDef(arr[0]);
+			$("#nextDef").click(function() {
+				defDiv.empty();
+				moreButton.show();
+			});
+		});
+
 	}
 
 	// --- quiz
@@ -140,11 +165,50 @@ $(document).ready(function() {
 			return "option" + (Math.floor(Math.random() * 3) + 1);
 		}
 
-		var quizEntries = [];
+		var allEntries = [];
 		for ( var key in quizMap) {
-			quizEntries.push(quizMap[key]);
+			allEntries.push(quizMap[key]);
 		}
+
+		var quizEntries = [];
+		var targetLevel = 0;
+		while (quizEntries.length < MIN_QUIZ_ENTRIES && targetLevel < DONT_QUIZ_ABOVE) {
+			quizEntries = quizEntries.concat(allEntries.filter(function(elem) {
+				return elem.level == targetLevel;
+			}));
+			targetLevel++;
+		}
+
 		quizEntries.sort(randomSort);
+
+		quizDiv.load("templates/quizform.html", function() {
+
+			showNextQuiz();
+
+			$("#nextQuiz").click(function() {
+				showNextQuiz();
+				return false;
+			});
+
+			// on radio click - show right and wrong answers
+			$("input:radio").click(function(e) {
+				$("label[for='" + correctOption + "']").addClass("correct");
+				$("input:radio").attr('disabled', 'disabled');
+				if (this.id != correctOption) {
+					// label bad answer incorrect
+					$("label[for='" + this.id + "']").addClass("incorrect");
+					// reshuffle
+					quizEntries.sort(randomSort);
+					// show OK button
+					$("#nextQuiz").show();
+				} else {
+					quizEntries.pop();
+					setTimeout(updateWordLevel, 10);
+					// auto-increment to next quiz
+					setTimeout(showNextQuiz, 1000);
+				}
+			});
+		});
 
 		function showNextQuiz() {
 			if (quizEntries.length == 0) {
@@ -192,34 +256,9 @@ $(document).ready(function() {
 			}
 		}
 
-		quizDiv.load("templates/quizform.html", function() {
-
-			showNextQuiz();
-
-			$("#nextQuiz").click(function() {
-				showNextQuiz();
-				return false;
-			});
-
-			// on radio click - show right and wrong answers
-			$("input:radio").click(function(e) {
-				$("input:radio").attr('disabled', 'disabled');
-				$("label[for='" + correctOption + "']").addClass("correct");
-				if (this.id != correctOption) {
-					// label bad answer incorrect
-					$("label[for='" + this.id + "']").addClass("incorrect");
-					// reshuffle
-					quizEntries.sort(randomSort);
-					// show OK button
-					$("#nextQuiz").show();
-				} else { // auto-increment to next quiz
-					quizEntries.pop();
-					setTimeout(showNextQuiz, 1000);
-					updateLevel($("#quizWord").text(), 1);
-				}
-			});
-		});
-
+		function updateWordLevel() {
+			updateLevel($("#quizWord").text(), 1);
+		}
 		function randomSort(a, b) {
 			return Math.random() > 0.5 ? -1 : 1;
 		}

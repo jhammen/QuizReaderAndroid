@@ -68,7 +68,7 @@ public class BackupWordsRestoreTask extends AsyncTask<Void, String, Integer> {
 			String line = saveReader.readLine();
 			while (line != null) {
 				wordDao.insert(parseWord(line));
-				publishProgress("Saved " + wordCounter++ + " words");
+				publishProgress("Restoring " + wordCounter++ + " words from backup");
 				line = saveReader.readLine();
 			}
 			wordDao.close();

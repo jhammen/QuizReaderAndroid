@@ -39,7 +39,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
 
 public class PageReadActivity extends BaseQuizReadActivity {
 
@@ -85,26 +84,6 @@ public class PageReadActivity extends BaseQuizReadActivity {
 
 	public class QuizReaderInterface {
 		DefinitionDao defDao = new DefinitionDao(PageReadActivity.this);
-
-		// @JavascriptInterface
-		public void showDef(String token) {
-			wordDao.open();
-			Word word = wordDao.getWord(token, title.getLanguage());
-			wordDao.close();
-			Toast.makeText(PageReadActivity.this, definitionString(word), Toast.LENGTH_SHORT).show();
-		}
-
-		private StringBuilder definitionString(Word word) {
-			StringBuilder defString = new StringBuilder();
-			for (int i = 0; i < word.getDefinitions().size(); i++) {
-				Definition def = word.getDefinitions().get(i);
-				if (i != 0) {
-					defString.append("; ");
-				}
-				defString.append(def.getText());
-			}
-			return defString;
-		}
 
 		// @JavascriptInterface
 		public String getEntries(String token) throws JSONException {
