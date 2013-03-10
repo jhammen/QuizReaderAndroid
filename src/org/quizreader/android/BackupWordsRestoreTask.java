@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import org.quizreader.android.database.Word;
 import org.quizreader.android.database.WordDao;
+import org.quizreader.android.qzz.FileUtil;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -30,7 +31,7 @@ import android.os.AsyncTask;
 
 public class BackupWordsRestoreTask extends AsyncTask<Void, String, Integer> {
 
-	private static final String SAVE_FILE_NAME = "words.dat";
+	private static final String SAVE_FILE_NAME = "quizreader.tab";
 	private ProgressDialog dialog;
 	private WordDao wordDao;
 	private Context context;
@@ -61,14 +62,14 @@ public class BackupWordsRestoreTask extends AsyncTask<Void, String, Integer> {
 		BufferedReader saveReader = null;
 		try {
 			// try to open the storage
-			File saveFile = new File(context.getExternalFilesDir(null), SAVE_FILE_NAME);
+			File saveFile = new File(FileUtil.getDownloadDir(), SAVE_FILE_NAME);
 			saveReader = new BufferedReader(new FileReader(saveFile));
 			// get all words from db
 			wordDao.open();
 			String line = saveReader.readLine();
 			while (line != null) {
 				wordDao.insert(parseWord(line));
-				publishProgress("Restoring " + wordCounter++ + " words from backup");
+				publishProgress("Restoring " + (wordCounter++) + " words from backup");
 				line = saveReader.readLine();
 			}
 			wordDao.close();

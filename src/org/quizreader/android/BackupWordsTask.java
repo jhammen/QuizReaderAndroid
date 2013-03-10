@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.quizreader.android.database.Word;
 import org.quizreader.android.database.WordDao;
+import org.quizreader.android.qzz.FileUtil;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -61,7 +62,7 @@ public class BackupWordsTask extends AsyncTask<Void, String, Integer> {
 		FileWriter saveWriter = null;
 		try {
 			// try to open some storage
-			File saveFile = new File(context.getExternalFilesDir(null), SAVE_FILE_NAME);
+			File saveFile = new File(FileUtil.getDownloadDir(), SAVE_FILE_NAME);
 			saveWriter = new FileWriter(saveFile);
 			// get all words from db
 			wordDao.open();
