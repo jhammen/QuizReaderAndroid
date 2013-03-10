@@ -16,6 +16,7 @@
  */
 package org.quizreader.android;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Random;
@@ -47,6 +48,8 @@ public class PageReadActivity extends BaseQuizReadActivity {
 	private WordDao wordDao;
 	private Random random;
 
+	private QzzFile qzzFile;
+
 	/** Called when the activity is first created. */
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
@@ -67,7 +70,7 @@ public class PageReadActivity extends BaseQuizReadActivity {
 		try {
 			random = new Random();
 			wordDao = new WordDao(this);
-			QzzFile qzzFile = new QzzFile(title.getFilepath(), this);
+			qzzFile = new QzzFile(title.getFilepath(), this);
 			URL htmlURL = qzzFile.getHTML(title.getId(), title.getSection());
 			if (htmlURL == null) { // beyond the last section
 				setResult(RESULT_END_TITLE);
@@ -163,11 +166,18 @@ public class PageReadActivity extends BaseQuizReadActivity {
 
 		// @JavascriptInterface
 		public void updateParagraph(int number) {
-			// TODO: increment paragraph and save in db
+			updateTitle(title.getSection(), number);
 		}
 
 		// @JavascriptInterface
-		public void finish() {
+		public void endPage() throws IOException {
+			URL htmlURL = qzzFile.getHTML(title.getId(), title.getSection());
+			if (htmlURL == null) { // beyond the last section
+				setResult(RESULT_END_TITLE);
+			}
+			else {
+				updateTitle(title.getSection() + 1, 1);
+			}
 			PageReadActivity.this.finish();
 		}
 	}

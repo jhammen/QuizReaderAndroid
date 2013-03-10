@@ -17,7 +17,6 @@
 
 package org.quizreader.android;
 
-import org.quizreader.android.database.TitleDao;
 import org.quizreader.android.qzz.QzzFile;
 
 import android.content.Intent;
@@ -28,7 +27,6 @@ import android.widget.TextView;
 public class TitleReadActivity extends BaseQuizReadActivity {
 
 	private TextView bigText;
-	private TitleDao titleDao;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -39,9 +37,7 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 		titleText.setText(titleText.getText() + title.getName());
 
 		bigText = (TextView) findViewById(R.id.bigText);
-		bigText.setText(title.getFilepath());
-
-		titleDao = new TitleDao(this);
+		updateTitleView();
 	}
 
 	public void quizRead(View view) {
@@ -80,15 +76,17 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 		super.onActivityResult(requestCode, resultCode, data);
 		System.out.println("result was: " + resultCode);
 		if (resultCode == RESULT_OK) {
-			updateTitle(title.getSection(), title.getParagraph() + 1);
 			updateTitleView();
 			backupProgress(); // too often?
 		}
 		else if (resultCode == PageReadActivity.RESULT_END_TITLE) { //
 			// TODO: what if we hit the end of the last section?
-			updateTitle(title.getSection() + 1, 1);
 			updateTitleView();
 		}
+	}
+
+	private void updateTitleView() {
+		bigText.setText("chapter: " + title.getSection() + ", paragraph: " + title.getParagraph());
 	}
 
 	private void backupProgress() {
@@ -100,18 +98,5 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 			}
 		};
 		task.execute((Void) null);
-	}
-
-	private void updateTitleView() {
-		bigText.setText("chapter: " + title.getSection() + ", paragraph: " + title.getParagraph());
-	}
-
-	private void updateTitle(int section, int paragraph) {
-		title.setSection(section);
-		title.setParagraph(paragraph);
-		title.setSectionLoaded(false);
-		titleDao.open();
-		titleDao.updateTitle(title);
-		titleDao.close();
 	}
 }

@@ -31,5 +31,5 @@ create table definition (
  	foreign key(word_id) REFERENCES word(_id),
  	foreign key(root_id) REFERENCES word(_id),
  	foreign key(title_id) REFERENCES title(_id) ON DELETE CASCADE
-);
+)
 

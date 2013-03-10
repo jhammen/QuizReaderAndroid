@@ -24,6 +24,7 @@ import android.os.Bundle;
 
 public class BaseQuizReadActivity extends Activity {
 
+	protected TitleDao titleDao;
 	protected Title title;
 
 	@Override
@@ -31,10 +32,18 @@ public class BaseQuizReadActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		// get the currently loaded title
 		String titleId = getIntent().getStringExtra("titleId");
-		TitleDao titleDao = new TitleDao(this);
+		titleDao = new TitleDao(this);
 		titleDao.open();
 		title = titleDao.getTitleById(titleId);
 		titleDao.close();
-
 	}
+
+	protected void updateTitle(int section, int paragraph) {
+		title.setSection(section);
+		title.setParagraph(paragraph);
+		titleDao.open();
+		titleDao.updateTitle(title);
+		titleDao.close();
+	}
+
 }
