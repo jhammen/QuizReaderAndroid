@@ -108,6 +108,7 @@ public class PageReadActivity extends BaseQuizReadActivity {
 				JSONObject defObj = new JSONObject();
 				// defObj.put("type", definition.get);
 				defObj.put("text", def.getText());
+				defObj.put("root", def.getRoot());
 				jsonArray.put(defObj);
 			}
 			json.put("defs", jsonArray);

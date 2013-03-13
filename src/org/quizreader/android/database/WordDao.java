@@ -17,9 +17,9 @@
 package org.quizreader.android.database;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -121,14 +121,19 @@ public class WordDao extends BaseDao {
 		List<Word> ret = new ArrayList<Word>();
 		Word word = getWord(token, language);
 		ret.add(word);
-		Set<String> rootIds = new HashSet<String>();
+		//Set<String> rootIds = new HashSet<String>();
+		Map<String, Word> wordMap = new HashMap<String, Word>();
 		for (Definition def : word.getDefinitions()) {
-			if (def.getRootId() != null) {
-				rootIds.add(def.getRootId());
+			String rootId = def.getRootId();
+			if (rootId != null) {
+				Word rootWord = wordMap.get(rootId);
+				if (rootWord == null) {
+					rootWord = getWord(rootId);
+					wordMap.put(rootId, rootWord);
+					ret.add(rootWord);
+				}
+				def.setRoot(rootWord.getToken());
 			}
-		}
-		for (String rootId : rootIds) {
-			ret.add(getWord(rootId));
 		}
 		return ret;
 	}
