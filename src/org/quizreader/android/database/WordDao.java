@@ -106,10 +106,14 @@ public class WordDao extends BaseDao {
 		return ret;
 	}
 
-	private String queryString() {
-		String query = "SELECT " + FIELD_ID + "," + FIELD_LANGUAGE + ",";
-		query += FIELD_TOKEN + "," + FIELD_QUIZ_LEVEL + " FROM " + TABLE_WORD;
-		query += " WHERE " + FIELD_LANGUAGE + "=? AND " + FIELD_TOKEN + "!=?";
+	private String randomQueryString() {
+		String query = "SELECT " + TABLE_WORD + "." + FIELD_ID + ",";
+		query += FIELD_LANGUAGE + "," + FIELD_TOKEN + ",";
+		query += FIELD_QUIZ_LEVEL + " FROM ";
+		query += TABLE_WORD + "," + DefinitionDao.TABLE_DEFINITIONS;
+		query += " WHERE " + DefinitionDao.TABLE_DEFINITIONS + ".";
+		query += DefinitionDao.FIELD_WORD_ID + "=" + TABLE_WORD + "." + FIELD_ID;
+		query += " AND " + FIELD_LANGUAGE + "=? AND " + FIELD_TOKEN + "!=?";
 		return query;
 	}
 
@@ -130,7 +134,7 @@ public class WordDao extends BaseDao {
 	}
 
 	public Word getRandomQuizWord(String language, String token, String token2) {
-		String query = queryString();
+		String query = randomQueryString();
 		query += " AND " + FIELD_TOKEN + "!=?";
 		query += " ORDER BY RANDOM() LIMIT 1";
 		Cursor cursor = database.rawQuery(query, new String[] { language, token, token2 });
@@ -141,7 +145,7 @@ public class WordDao extends BaseDao {
 	}
 
 	public Word getQuizWordLike(String language, String token, String like) {
-		String query = queryString();
+		String query = randomQueryString();
 		query += " AND " + WordDao.FIELD_TOKEN + " LIKE '" + like + "'";
 		query += " ORDER BY RANDOM() LIMIT 1";
 		Cursor cursor = database.rawQuery(query, new String[] { language, token });

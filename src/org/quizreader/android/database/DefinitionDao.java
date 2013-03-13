@@ -26,12 +26,12 @@ import android.database.sqlite.SQLiteDatabase;
 
 public class DefinitionDao extends BaseDao {
 
-	private static final String TABLE_DEFINITIONS = "definition";
+	static final String TABLE_DEFINITIONS = "definition";
 	private static final String FIELD_ID = "_id";
 	private static final String FIELD_ROOT_ID = "root_id";
 	private static final String FIELD_TEXT = "text";
 	private static final String FIELD_TITLE_ID = "title_id";
-	private static final String FIELD_WORD_ID = "word_id";
+	static final String FIELD_WORD_ID = "word_id";
 
 	public DefinitionDao(Context context) {
 		super(context);
