@@ -94,7 +94,7 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 			@Override
 			protected void onPostExecute(Integer result) {
 				super.onPostExecute(result);
-				readTitle();
+				// readTitle();
 			}
 		};
 		task.execute((Void) null);

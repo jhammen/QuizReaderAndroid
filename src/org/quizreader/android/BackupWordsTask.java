@@ -34,10 +34,8 @@ public class BackupWordsTask extends AsyncTask<Void, String, Integer> {
 	private static final String SAVE_FILE_NAME = "words.dat";
 	private ProgressDialog dialog;
 	private WordDao wordDao;
-	private Context context;
 
 	public BackupWordsTask(Context context) {
-		this.context = context;
 		wordDao = new WordDao(context);
 
 		dialog = new ProgressDialog(context) {

@@ -88,7 +88,7 @@ public class WordDao extends BaseDao {
 			cursor.close();
 			return null;
 		}
-		Word ret = cursorToWord(cursor);
+		Word ret = cursorToWord(cursor, true);
 		cursor.close();
 		return ret;
 	}
@@ -101,7 +101,7 @@ public class WordDao extends BaseDao {
 			cursor.close();
 			return null;
 		}
-		Word ret = cursorToWord(cursor);
+		Word ret = cursorToWord(cursor, true);
 		cursor.close();
 		return ret;
 	}
@@ -144,7 +144,7 @@ public class WordDao extends BaseDao {
 		query += " ORDER BY RANDOM() LIMIT 1";
 		Cursor cursor = database.rawQuery(query, new String[] { language, token, token2 });
 		cursor.moveToFirst();
-		Word quizWord = cursorToWord(cursor);
+		Word quizWord = cursorToWord(cursor, true);
 		cursor.close();
 		return quizWord;
 	}
@@ -159,7 +159,7 @@ public class WordDao extends BaseDao {
 			cursor.close();
 			return null;
 		}
-		Word quizWord = cursorToWord(cursor);
+		Word quizWord = cursorToWord(cursor, true);
 		cursor.close();
 		return quizWord;
 	}
@@ -171,14 +171,14 @@ public class WordDao extends BaseDao {
 		cursor.moveToFirst();
 		List<Word> words = new ArrayList<Word>();
 		while (cursor.isAfterLast() == false) {
-			words.add(cursorToWord(cursor));
+			words.add(cursorToWord(cursor, false));
 			cursor.moveToNext();
 		}
 		cursor.close();
 		return words;
 	}
 
-	private Word cursorToWord(Cursor cursor) {
+	private Word cursorToWord(Cursor cursor, boolean includeDefinitions) {
 		Word word = new Word();
 		word.setId(cursor.getString(cursor.getColumnIndex(FIELD_ID)));
 		word.setLanguage(cursor.getString(cursor.getColumnIndex(FIELD_LANGUAGE)));
