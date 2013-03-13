@@ -31,6 +31,10 @@ public class BaseQuizReadActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		// get the currently loaded title
+		fetchTitle();
+	}
+
+	protected void fetchTitle() {
 		String titleId = getIntent().getStringExtra("titleId");
 		titleDao = new TitleDao(this);
 		titleDao.open();
@@ -38,7 +42,7 @@ public class BaseQuizReadActivity extends Activity {
 		titleDao.close();
 	}
 
-	protected void updateTitle() {
+	protected void saveTitle() {
 		titleDao.open();
 		titleDao.updateTitle(title);
 		titleDao.close();

@@ -50,7 +50,7 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 					protected void onPostExecute(Integer result) {
 						super.onPostExecute(result);
 						title.setParagraph(1); // ready to quizread first paragraph
-						updateTitle();
+						saveTitle();
 						readTitle();
 					}
 				}.execute(qzzFile.getDefinitionReader(title.getSection()));
@@ -66,12 +66,14 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 	private void readTitle() {
 		Intent readIntent = new Intent(this, PageReadActivity.class);
 		readIntent.putExtra("titleId", title.getId());
-		startActivity(readIntent);
+		startActivityForResult(readIntent, 0);
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
+		// grab the title again
+		fetchTitle();
 		if (resultCode == RESULT_OK) {
 			updateTitleView();
 			backupProgress(); // too often?
