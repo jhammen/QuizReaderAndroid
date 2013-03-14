@@ -124,6 +124,7 @@ public class LoadDefinitionsTask extends AsyncTask<Reader, String, Integer> {
 				eventType = xpp.next();
 			}
 			if (!isCancelled()) {
+				afterLoad(db);
 				db.setTransactionSuccessful();
 			}
 		} catch (Exception e) {
@@ -137,6 +138,10 @@ public class LoadDefinitionsTask extends AsyncTask<Reader, String, Integer> {
 	}
 
 	protected void setup() {
+		// for subclasses, default implementation nothing
+	}
+
+	protected void afterLoad(SQLiteDatabase db) {
 		// for subclasses, default implementation nothing
 	}
 

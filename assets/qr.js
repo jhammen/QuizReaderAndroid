@@ -77,21 +77,22 @@ function defwindow(levelCache) {
 		}
 	}
 
-	function showSingleDefinition(word) {
-		moreButton.hide();
+	function showDefinition(word, callback) {
+		div.show();
 		// get entries
 		var arr = JSON.parse(qr.getEntries(word));
-		defDiv.load("templates/showdef.html", function() {
-			showDef(arr[0]);
-			$("#nextDef").click(function() {
-				defDiv.empty();
-				moreButton.show();
-			});
+		showDef(arr[0]);
+		$("#nextDef").unbind('click');
+		$("#nextDef").click(function() {
+			div.hide();
+			levelCache.updateLevel(word, -1);
+			callback();
 		});
 	}
 
 	return {
 		init : init,
+		showDefinition : showDefinition,
 		showDefinitions : showDefinitions
 	};
 }
@@ -141,8 +142,10 @@ $(document).ready(function() {
 	// set up clickable words
 	$("a").click(function() {
 		var word = $(this).text();
-		defWindow.showSingleDefinition(word);
-		updateLevel(word, -1);
+		$("#content").hide();
+		defWindow.showDefinition(word, function() {
+			$("#content").show();
+		});		
 	});
 
 	// parse paragraph from url and unhide up to that point
@@ -252,24 +255,24 @@ function quizwindow(levelCache) {
 
 		correctOption = pickNextOption();
 
-		var allEntries = [];
-		for ( var key in quizMap) {
-			allEntries.push(quizMap[key]);
-		}
-
 		quizEntries = [];
-		var targetLevel = 0;
-		while (quizEntries.length < MIN_QUIZ_ENTRIES && targetLevel < DONT_QUIZ_ABOVE) {
-			quizEntries = quizEntries.concat(allEntries.filter(function(elem) {
-				if (isSimpleRoot(elem)) {
-					return false;
-				}
-				return elem.level == targetLevel;
-			}));
-			targetLevel++;
+		for ( var key in quizMap) {
+			var ent = quizMap[key];
+			if (!isSimpleRoot(ent)) {
+				quizEntries.push(ent);
+			}
 		}
 
+		// shuffle then sort by level
 		quizEntries.sort(randomSort);
+		quizEntries.sort(levelSort);
+
+		// truncate list
+		var i = 0;
+		while (quizEntries[i].level == 0 || i < MIN_QUIZ_ENTRIES) {
+			i++;
+		}
+		quizEntries = quizEntries.slice(0, i);
 
 		showNextQuiz(callback);
 		$("#nextQuiz").unbind('click');
@@ -368,6 +371,16 @@ function quizwindow(levelCache) {
 
 	function randomSort(a, b) {
 		return Math.random() > 0.5 ? -1 : 1;
+	}
+
+	function levelSort(a, b) {
+		if (a.level < b.level) {
+			return -1;
+		}
+		if (a.level > b.level) {
+			return 1;
+		}
+		return 0;
 	}
 
 }

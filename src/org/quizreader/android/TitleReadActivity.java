@@ -20,6 +20,7 @@ package org.quizreader.android;
 import org.quizreader.android.qzz.QzzFile;
 
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -47,10 +48,16 @@ public class TitleReadActivity extends BaseQuizReadActivity {
 				final QzzFile qzzFile = new QzzFile(title.getFilepath(), this);
 				new LoadDefinitionsTask(this, title) {
 					@Override
+					protected void afterLoad(SQLiteDatabase db) { // within same transaction
+						title.setParagraph(1); // ready to quizread first paragraph
+						titleDao.open(db);
+						titleDao.updateTitle(title);
+						titleDao.close();
+					};
+
+					@Override
 					protected void onPostExecute(Integer result) {
 						super.onPostExecute(result);
-						title.setParagraph(1); // ready to quizread first paragraph
-						saveTitle();
 						readTitle();
 					}
 				}.execute(qzzFile.getDefinitionReader(title.getSection()));

@@ -121,7 +121,7 @@ public class WordDao extends BaseDao {
 		List<Word> ret = new ArrayList<Word>();
 		Word word = getWord(token, language);
 		ret.add(word);
-		//Set<String> rootIds = new HashSet<String>();
+		// Set<String> rootIds = new HashSet<String>();
 		Map<String, Word> wordMap = new HashMap<String, Word>();
 		for (Definition def : word.getDefinitions()) {
 			String rootId = def.getRootId();
@@ -185,7 +185,9 @@ public class WordDao extends BaseDao {
 		word.setToken(cursor.getString(cursor.getColumnIndex(FIELD_TOKEN)));
 		word.setQuizLevel(cursor.getInt(cursor.getColumnIndex(FIELD_QUIZ_LEVEL)));
 
-		word.setDefinitions(defDao.getDefinitions(word.getId()));
+		if (includeDefinitions) {
+			word.setDefinitions(defDao.getDefinitions(word.getId()));
+		}
 
 		return word;
 	}
