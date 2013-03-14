@@ -21,24 +21,23 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import org.quizreader.android.database.Word;
+import org.quizreader.android.database.QRDatabaseHelper;
 import org.quizreader.android.database.WordDao;
 import org.quizreader.android.qzz.FileUtil;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 
 public class BackupWordsRestoreTask extends AsyncTask<Void, String, Integer> {
 
 	private static final String SAVE_FILE_NAME = "quizreader.tab";
 	private ProgressDialog dialog;
-	private WordDao wordDao;
-	private Context context;
+	private QRDatabaseHelper databaseHelper;
 
 	public BackupWordsRestoreTask(Context context) {
-		this.context = context;
-		wordDao = new WordDao(context);
+		databaseHelper = new QRDatabaseHelper(context);
 
 		dialog = new ProgressDialog(context) {
 			@Override
@@ -60,23 +59,30 @@ public class BackupWordsRestoreTask extends AsyncTask<Void, String, Integer> {
 	protected Integer doInBackground(Void... nothing) {
 		int wordCounter = 0;
 		BufferedReader saveReader = null;
+
+		SQLiteDatabase db = databaseHelper.getWritableDatabase();
+		db.beginTransaction();
+
 		try {
 			// try to open the storage
 			File saveFile = new File(FileUtil.getDownloadDir(), SAVE_FILE_NAME);
 			saveReader = new BufferedReader(new FileReader(saveFile));
 			// get all words from db
-			wordDao.open();
 			String line = saveReader.readLine();
 			while (line != null) {
-				wordDao.insert(parseWord(line));
+				String[] split = line.split("\t");
+				int quizLevel = Integer.parseInt(split[2]);
+				long wordId = WordDao.insertOrGetWordId(db, split[0], split[1], quizLevel);
 				publishProgress("Restoring " + (wordCounter++) + " words from backup");
 				line = saveReader.readLine();
 			}
-			wordDao.close();
+			db.setTransactionSuccessful();
 		} catch (Exception e) {
 			publishProgress(e.getClass() + ": " + e.getLocalizedMessage());
 			e.printStackTrace();
 		} finally {
+			db.endTransaction();
+			db.close();
 			if (saveReader != null) {
 				try {
 					saveReader.close();
@@ -85,15 +91,6 @@ public class BackupWordsRestoreTask extends AsyncTask<Void, String, Integer> {
 			}
 		}
 		return wordCounter;
-	}
-
-	private Word parseWord(String line) throws IOException {
-		String[] split = line.split("\t");
-		Word word = new Word();
-		word.setLanguage(split[0]);
-		word.setToken(split[1]);
-		word.setQuizLevel(Integer.parseInt(split[2]));
-		return word;
 	}
 
 	@Override
