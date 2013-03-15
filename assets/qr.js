@@ -11,14 +11,15 @@ function defwindow(levelCache) {
 	var div = $("<div id='defDiv'/>").appendTo("body");
 
 	var init = function(callback) {
+		var IDEAL_WIDTH = 300;
+		var IDEAL_HEIGHT = 300;
+		var pageWidth = $(window).width();
+		var pageHeight = window.innerHeight;
+		var width = pageWidth < IDEAL_WIDTH ? pageWidth : IDEAL_WIDTH;
+		var height = pageHeight < IDEAL_HEIGHT ? pageHeight : IDEAL_HEIGHT;
+
 		div.load("templates/showdef.html", function() {
 			// size center divs
-			var IDEAL_WIDTH = 300;
-			var IDEAL_HEIGHT = 300;
-			var pageWidth = $(window).width();
-			var pageHeight = window.innerHeight;
-			var width = pageWidth < IDEAL_WIDTH ? pageWidth : IDEAL_WIDTH;
-			var height = pageHeight < IDEAL_HEIGHT ? pageHeight : IDEAL_HEIGHT;
 			div.height(height);
 			div.width(width);
 			div.css('top', parseInt(pageHeight / 2 - height / 2) + 'px');
@@ -46,10 +47,12 @@ function defwindow(levelCache) {
 		while (defEntries.length == 0) {
 			var word = wordList.pop();
 			if (!word) { // done
+				qr.endMessage();
 				div.hide();
 				callback(quizMap);
 				return;
 			}
+			qr.showMessage("loading word: " + word);
 			if (levelCache.isUnknownWord(word)) {
 				var arr = JSON.parse(qr.getEntries(word));
 				for ( var i = 0; i < arr.length; i++) {
@@ -63,6 +66,7 @@ function defwindow(levelCache) {
 				}
 			}
 		}
+		qr.endMessage();
 		var ent = defEntries.pop();
 		showDef(ent);
 		return ent.word;
@@ -73,15 +77,29 @@ function defwindow(levelCache) {
 		$("#defList").empty();
 		for ( var i = 0; i < ent.defs.length; i++) {
 			var def = ent.defs[i];
-			$("<li>" + def.text + "</li>").appendTo("#defList");
+			var root = def.root;
+			var text = def.text;
+			if (root) {
+				text = text.replace(root, "<u><a>" + root + "</a></u>");
+			}
+			$("<li>" + text + "</li>").appendTo("#defList");
+			if (root) {
+				$("#defList a").click(function() {
+					var word = $(this).text();
+					lookupDefinition(word);
+				});
+			}
 		}
 	}
 
-	function showDefinition(word, callback) {
-		div.show();
-		// get entries
+	function lookupDefinition(word) {
 		var arr = JSON.parse(qr.getEntries(word));
 		showDef(arr[0]);
+	}
+	
+	function showDefinition(word, callback) {
+		div.show();
+		lookupDefinition(word);
 		$("#nextDef").unbind('click');
 		$("#nextDef").click(function() {
 			div.hide();
@@ -141,10 +159,12 @@ $(document).ready(function() {
 
 	// set up clickable words
 	$("a").click(function() {
+		var oldTop = $(window).scrollTop();
 		var word = $(this).text();
 		$("#content").hide();
 		defWindow.showDefinition(word, function() {
 			$("#content").show();
+			$(window).scrollTop(oldTop);
 		});
 	});
 
@@ -174,6 +194,7 @@ $(document).ready(function() {
 	// init windows and start
 	quizWindow.init(function() {
 		defWindow.init(function() {
+			qr.showMessage("page loaded");
 			quizRead();
 		});
 	});
@@ -182,11 +203,13 @@ $(document).ready(function() {
 
 	function quizRead() {
 		// grab all words for the current paragraph
+		qr.showMessage("finding words in paragraph " + paragraph);
 		var wordMap = {};
 		$("p:nth-of-type(" + paragraph + ") a").each(function(index) {
 			wordMap[$(this).text()] = 1;
 		});
 		var wordList = Object.keys(wordMap);
+		qr.showMessage("found " + wordList.length + " unique words");
 		// run definitions window
 		greyDiv.show();
 		$("#content").hide();

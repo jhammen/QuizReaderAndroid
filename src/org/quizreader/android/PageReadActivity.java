@@ -31,6 +31,7 @@ import org.quizreader.android.database.WordDao;
 import org.quizreader.android.qzz.QzzFile;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -48,6 +49,7 @@ public class PageReadActivity extends BaseQuizReadActivity {
 	private Random random;
 
 	private QzzFile qzzFile;
+	private ProgressDialog dialog;
 
 	/** Called when the activity is first created. */
 	@SuppressLint("SetJavaScriptEnabled")
@@ -55,6 +57,12 @@ public class PageReadActivity extends BaseQuizReadActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.page_read);
+		// immediately pop up loading dialog
+		dialog = new ProgressDialog(this);
+		dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+		dialog.setMessage("loading page");
+		dialog.show();
+		// set up webview
 		WebView webview = (WebView) findViewById(R.id.webView);
 		webview.setWebViewClient(new QRWebViewClient());
 		webview.setWebChromeClient(new WebChromeClient() {
@@ -86,6 +94,24 @@ public class PageReadActivity extends BaseQuizReadActivity {
 		DefinitionDao defDao = new DefinitionDao(PageReadActivity.this);
 
 		// @JavascriptInterface
+		public void showMessage(final String mesg) {
+			runOnUiThread(new Runnable() {
+				public void run() {
+					dialog.setMessage(mesg);
+					dialog.show();
+				}
+			});
+		}
+
+		public void endMessage() {
+			runOnUiThread(new Runnable() {
+				public void run() {
+					dialog.dismiss();
+				}
+			});
+		}
+
+		// @JavascriptInterface
 		public String getEntries(String token) throws JSONException {
 			wordDao.open();
 			List<Word> words = wordDao.getWordAndRoots(token, title.getLanguage());
@@ -114,7 +140,7 @@ public class PageReadActivity extends BaseQuizReadActivity {
 			json.put("defs", jsonArray);
 			return json;
 		}
-		
+
 		public String getSimilarEntry(String token) throws JSONException {
 			int attempts = 0;
 			while (attempts++ < 5) {
