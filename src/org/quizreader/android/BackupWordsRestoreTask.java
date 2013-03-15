@@ -32,7 +32,6 @@ import android.os.AsyncTask;
 
 public class BackupWordsRestoreTask extends AsyncTask<Void, String, Integer> {
 
-	private static final String SAVE_FILE_NAME = "quizreader.tab";
 	private ProgressDialog dialog;
 	private QRDatabaseHelper databaseHelper;
 
@@ -65,7 +64,7 @@ public class BackupWordsRestoreTask extends AsyncTask<Void, String, Integer> {
 
 		try {
 			// try to open the storage
-			File saveFile = new File(FileUtil.getDownloadDir(), SAVE_FILE_NAME);
+			File saveFile = new File(FileUtil.getDownloadDir(), BackupWordsTask.SAVE_FILE_NAME);
 			saveReader = new BufferedReader(new FileReader(saveFile));
 			// get all words from db
 			String line = saveReader.readLine();

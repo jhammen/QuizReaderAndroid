@@ -31,7 +31,7 @@ import android.os.AsyncTask;
 
 public class BackupWordsTask extends AsyncTask<Void, String, Integer> {
 
-	private static final String SAVE_FILE_NAME = "words.dat";
+	protected static final String SAVE_FILE_NAME = "quizreader.tab";
 	private ProgressDialog dialog;
 	private WordDao wordDao;
 
