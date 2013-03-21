@@ -94,7 +94,7 @@ public class WordDao extends BaseDao {
 	}
 
 	public Word getWord(String word, String language) {
-		String query = FIELD_TOKEN + " = ? AND " + FIELD_LANGUAGE + " = ?";
+		String query = "UPPER(" + FIELD_TOKEN + ") = UPPER(?) AND " + FIELD_LANGUAGE + " = ?";
 		Cursor cursor = database.query(TABLE_WORD, null, query, new String[] { word, language }, null, null, null);
 		cursor.moveToFirst();
 		if (cursor.isAfterLast()) {
@@ -120,19 +120,21 @@ public class WordDao extends BaseDao {
 	public List<Word> getWordAndRoots(String token, String language) {
 		List<Word> ret = new ArrayList<Word>();
 		Word word = getWord(token, language);
-		ret.add(word);
-		// Set<String> rootIds = new HashSet<String>();
-		Map<String, Word> wordMap = new HashMap<String, Word>();
-		for (Definition def : word.getDefinitions()) {
-			String rootId = def.getRootId();
-			if (rootId != null) {
-				Word rootWord = wordMap.get(rootId);
-				if (rootWord == null) {
-					rootWord = getWord(rootId);
-					wordMap.put(rootId, rootWord);
-					ret.add(rootWord);
+		if (word != null) {
+			ret.add(word);
+			// Set<String> rootIds = new HashSet<String>();
+			Map<String, Word> wordMap = new HashMap<String, Word>();
+			for (Definition def : word.getDefinitions()) {
+				String rootId = def.getRootId();
+				if (rootId != null) {
+					Word rootWord = wordMap.get(rootId);
+					if (rootWord == null) {
+						rootWord = getWord(rootId);
+						wordMap.put(rootId, rootWord);
+						ret.add(rootWord);
+					}
+					def.setRoot(rootWord.getToken());
 				}
-				def.setRoot(rootWord.getToken());
 			}
 		}
 		return ret;
